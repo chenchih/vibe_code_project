@@ -1,2 +1,5 @@
 # vibe_code_project
-Record vibe coding example
+This is record vibe coding example
+
+- Quotation 報價單
+

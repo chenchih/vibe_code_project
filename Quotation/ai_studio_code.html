@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Generator / 估價單產生器 V1.4</title>
+    <style>
+        /* --- Global & Layout --- */
+        :root {
+            --bg-color: #F4F4F4;
+            --primary-color: #3F51B5; /* Blue */
+            --accent-color: #F9A825;  /* Orange */
+            --header-bg-color: #E8EAF6; /* Light Blue */
+            --page-shadow: 0 0 10px rgba(0,0,0,0.1);
+            --border-color: #ccc;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Helvetica Neue', Arial, '蘋方-繁', 'Microsoft JhengHei', sans-serif;
+            font-size: 10pt;
+            margin: 0;
+            padding: 20px;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+        }
+
+        .page {
+            background-color: white;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            padding: 15mm;
+            box-shadow: var(--page-shadow);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* --- General Elements --- */
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 24pt;
+        }
+
+        textarea {
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 5px;
+            resize: vertical;
+            font-size: 10pt;
+            box-sizing: border-box;
+        }
+
+        [contenteditable="true"] {
+            outline: none;
+            padding: 5px;
+            border: 1px solid transparent;
+        }
+        [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+            border: 1px dashed var(--border-color);
+            background-color: #f9f9f9;
+        }
+
+        /* --- Header & Actions --- */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .lang-switcher {
+            display: flex;
+            gap: 10px;
+        }
+        .lang-switcher a {
+            text-decoration: none;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        .lang-switcher a.active {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10pt;
+            color: white;
+            white-space: nowrap;
+            transition: background-color 0.2s;
+        }
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: #303F9F; }
+        .btn-accent { background-color: var(--accent-color); }
+        .btn-accent:hover { background-color: #F57F17; }
+        
+        #csv-upload-label {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #csv-upload-label:hover { background-color: #303F9F; }
+        #csv-file { display: none; }
+
+        /* --- Info Section --- */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            width: 50%;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+        .info-box h2 {
+            background-color: var(--header-bg-color);
+            color: var(--primary-color);
+            font-size: 11pt;
+            margin: 0;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .info-box-content {
+            padding: 12px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 8px;
+            align-items: center;
+        }
+        .info-box-content strong {
+            white-space: nowrap;
+        }
+
+        /* --- Quote Table --- */
+        #quote-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        #quote-table th, #quote-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+            word-break: break-word;
+        }
+
+        #quote-table thead {
+            background-color: var(--header-bg-color);
+            color: var(--primary-color);
+            font-size: 11pt;
+            position: relative;
+        }
+
+        #quote-table th { position: relative; }
+        .resizer {
+            position: absolute;
+            top: 0;
+            right: -3px;
+            width: 6px;
+            height: 100%;
+            cursor: col-resize;
+            user-select: none;
+        }
+
+        #quote-table tbody tr { cursor: move; }
+        #quote-table tbody tr.dragging { opacity: 0.5; background: #f0f0f0; }
+        #quote-table td[contenteditable="true"].error { background-color: #ffdddd; border-color: red; }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            cursor: default;
+        }
+        .action-buttons button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14pt;
+            padding: 0;
+            color: var(--primary-color);
+        }
+
+        /* --- Summary Section --- */
+        .summary-section {
+            margin-top: auto; /* Push to the bottom */
+            padding-top: 20px;
+        }
+        .notes-total-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .notes { flex-grow: 1; }
+        .total-section { width: 280px; flex-shrink: 0; border: 1px solid var(--border-color); }
+        .total-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-color); }
+        .total-row:last-child { border-bottom: none; }
+        #grand-total { background-color: var(--header-bg-color); }
+        #grand-total strong { font-size: 11pt; color: var(--primary-color); }
+
+        /* --- Signature Section --- */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            gap: 40px;
+        }
+        .signature-box { width: 50%; padding-top: 50px; }
+        .signature-line { border-bottom: 1px solid black; padding-bottom: 5px; margin-bottom: 5px; }
+
+        /* --- Print Styles --- */
+        @media print {
+            body { background-color: white; padding: 0; margin: 0; }
+            .page { width: 100%; min-height: 0; margin: 0; box-shadow: none; padding: 0; }
+            .no-print { display: none !important; }
+            [contenteditable="true"] { border-color: transparent !important; background-color: white !important; }
+            textarea { border-color: transparent !important; resize: none; }
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+            .signature-section { page-break-before: auto; }
+        }
+        @page { size: A4; margin: 15mm; }
+    </style>
+</head>
+<body>
+
+    <div class="page">
+        <!-- HEADER AND ACTIONS -->
+        <header class="no-print page-header">
+            <div class="lang-switcher">
+                <a href="#" id="lang-zh" data-lang="zh">中文</a>
+                <span>|</span>
+                <a href="#" id="lang-en" data-lang="en">English</a>
+            </div>
+            <div class="actions">
+                <button id="csv-download-btn" class="btn btn-primary" data-lang-key="btn_download_csv">下載 CSV 範本</button>
+                <label for="csv-file" id="csv-upload-label" class="btn btn-primary" data-lang-key="btn_import_csv">上傳 CSV 匯入</label>
+                <input type="file" id="csv-file" accept=".csv">
+                <button id="export-pdf-btn" class="btn btn-accent" data-lang-key="btn_export_pdf">匯出 PDF / 列印</button>
+            </div>
+        </header>
+
+        <h1 data-lang-key="title">估價單</h1>
+
+        <!-- COMPANY & CUSTOMER INFO -->
+        <section class="info-section">
+            <div class="info-box">
+                <h2 data-lang-key="company_info">公司資訊</h2>
+                <div class="info-box-content">
+                    <strong data-lang-key="company_name">公司名稱</strong><span contenteditable="true">ABC Tech Company</span>
+                    <strong data-lang-key="tax_id">統一編號</strong><span contenteditable="true"></span>
+                    <strong data-lang-key="company_address">公司地址</strong><span contenteditable="true">XXXXXXXXX</span>
+                    <strong data-lang-key="contact_person">聯絡人</strong><span contenteditable="true"></span>
+                    <strong data-lang-key="phone">電話</strong><span contenteditable="true"></span>
+                    <strong>Email</strong><span contenteditable="true"></span>
+                </div>
+            </div>
+            <div class="info-box">
+                <h2 data-lang-key="customer_info">客戶資訊</h2>
+                <div class="info-box-content">
+                    <strong data-lang-key="customer_company">客戶公司</strong><span contenteditable="true"></span>
+                    <strong data-lang-key="contact_person">聯絡人</strong><span contenteditable="true"></span>
+                    <strong data-lang-key="phone">電話</strong><span contenteditable="true"></span>
+                    <strong>Email</strong><span contenteditable="true"></span>
+                    <strong data-lang-key="quote_no">估價單號</strong><span contenteditable="true">Q</span>
+                    <strong data-lang-key="quote_date">估價日期</strong><span id="quote-date" contenteditable="true"></span>
+                    <strong data-lang-key="valid_until">有效期限</strong><span contenteditable="true"></span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- QUOTE DETAILS TABLE -->
+        <section class="details-section">
+            <table id="quote-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45px;" data-lang-key="th_index">項次</th>
+                        <th style="width: 100px;" data-lang-key="th_item">項目</th>
+                        <th style="width: 150px;" data-lang-key="th_desc">內容／範圍</th>
+                        <th style="width: 55px;" data-lang-key="th_unit">單位</th>
+                        <th style="width: 60px;" data-lang-key="th_qty">數量</th>
+                        <th style="width: 100px;" data-lang-key="th_price">單價 (NT$)</th>
+                        <th style="width: 100px;" data-lang-key="th_subtotal">小計 (NT$)</th>
+                        <th class="no-print" style="width: 60px;" data-lang-key="th_actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="quote-body"></tbody>
+            </table>
+        </section>
+
+        <!-- SUMMARY & SIGNATURE -->
+        <div class="summary-section">
+            <div class="notes-total-wrapper">
+                <div class="notes">
+                    <strong data-lang-key="notes">備註：</strong>
+                    <textarea rows="4"></textarea>
+                </div>
+                <div class="total-section">
+                    <div id="grand-total" class="total-row">
+                        <strong data-lang-key="grand_total">總額 (NT$)</strong>
+                        <strong id="total-amount">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="signature-section">
+                <div class="signature-box">
+                    <div class="signature-line"><span data-lang-key="customer_sig">客戶簽章</span>：</div>
+                    <div><span data-lang-key="date">日期</span>：</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line"><span data-lang-key="company_sig">公司簽章</span>：</div>
+                    <div><span data-lang-key="date">日期</span>：</div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- Multi-language Setup ---
+        const translations = {
+            zh: {
+                title: '估價單',
+                btn_download_csv: '下載 CSV 範本',
+                btn_import_csv: '上傳 CSV 匯入',
+                btn_export_pdf: '匯出 PDF / 列印',
+                company_info: '公司資訊',
+                customer_info: '客戶資訊',
+                company_name: '公司名稱',
+                tax_id: '統一編號',
+                company_address: '公司地址',
+                contact_person: '聯絡人',
+                phone: '電話',
+                customer_company: '客戶公司',
+                quote_no: '估價單號',
+                quote_date: '估價日期',
+                valid_until: '有效期限',
+                th_index: '項次',
+                th_item: '項目',
+                th_desc: '內容／範圍',
+                th_unit: '單位',
+                th_qty: '數量',
+                th_price: '單價 (NT$)',
+                th_subtotal: '小計 (NT$)',
+                th_actions: '操作',
+                notes: '備註：',
+                grand_total: '總額 (NT$)',
+                customer_sig: '客戶簽章',
+                company_sig: '公司簽章',
+                date: '日期',
+                csv_header_error: 'CSV 標頭不符！請使用範本格式。',
+                csv_expected_header: '預期標頭',
+                csv_received_header: '收到標頭',
+                csv_template_filename: '估價單範本.csv',
+            },
+            en: {
+                title: 'Quotation',
+                btn_download_csv: 'Download CSV Template',
+                btn_import_csv: 'Import from CSV',
+                btn_export_pdf: 'Export PDF / Print',
+                company_info: 'Company Information',
+                customer_info: 'Customer Information',
+                company_name: 'Company Name',
+                tax_id: 'Tax ID',
+                company_address: 'Address',
+                contact_person: 'Contact Person',
+                phone: 'Phone',
+                customer_company: 'Customer Company',
+                quote_no: 'Quote No.',
+                quote_date: 'Quote Date',
+                valid_until: 'Valid Until',
+                th_index: 'No.',
+                th_item: 'Item',
+                th_desc: 'Description / Scope',
+                th_unit: 'Unit',
+                th_qty: 'Qty',
+                th_price: 'Unit Price (NT$)',
+                th_subtotal: 'Subtotal (NT$)',
+                th_actions: 'Actions',
+                notes: 'Notes:',
+                grand_total: 'Grand Total (NT$)',
+                customer_sig: 'Customer Signature',
+                company_sig: 'Company Signature',
+                date: 'Date',
+                csv_header_error: 'CSV header does not match! Please use the template format.',
+                csv_expected_header: 'Expected header',
+                csv_received_header: 'Received header',
+                csv_template_filename: 'Quotation_Template.csv',
+            }
+        };
+
+        let currentLang = localStorage.getItem('quotation_lang') || 'zh';
+
+        const setLanguage = (lang) => {
+            currentLang = lang;
+            localStorage.setItem('quotation_lang', lang);
+            document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
+
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Highlight active language
+            document.querySelectorAll('.lang-switcher a').forEach(a => {
+                a.classList.toggle('active', a.dataset.lang === lang);
+            });
+        };
+
+        const initialData = [
+            { item: '品牌諮詢', description: '2H 諮詢與簡報彙整', unit: '案', quantity: 1, price: 8000 },
+            { item: '腳本規劃', description: '影片腳本三版迭代與分鏡', unit: '次', quantity: 1, price: 12000 },
+            { item: '形象影片拍攝', description: '一日拍攝（基本器材+現場導演）', unit: '日', quantity: 1, price: 28000 },
+            { item: '剪輯與調色', description: '首版剪輯+兩版修訂+音樂授權', unit: '式', quantity: 1, price: 18000 }
+        ];
+
+        const tableBody = document.getElementById('quote-body');
+        const totalAmountEl = document.getElementById('total-amount');
+
+        // --- Core Functions ---
+        const formatCurrency = (num) => isNaN(num) ? '0' : new Intl.NumberFormat('en-US').format(num);
+        const cleanNumber = (str) => {
+            if (typeof str !== 'string') str = String(str);
+            const num = parseFloat(str.replace(/[^0-9.-]+/g, ''));
+            return isNaN(num) ? 0 : num;
+        };
+        
+        const calculateRow = (row) => {
+            const quantity = cleanNumber(row.querySelector('[data-cell="quantity"]').textContent);
+            const price = cleanNumber(row.querySelector('[data-cell="price"]').textContent);
+            const subtotal = quantity * price;
+            row.querySelector('[data-cell="subtotal"]').textContent = formatCurrency(subtotal);
+            return subtotal;
+        };
+
+        const calculateTotal = () => {
+            let total = 0;
+            tableBody.querySelectorAll('tr').forEach(row => {
+                total += cleanNumber(row.querySelector('[data-cell="subtotal"]').textContent);
+            });
+            totalAmountEl.textContent = formatCurrency(total);
+        };
+
+        const updateItemNumbers = () => {
+            tableBody.querySelectorAll('tr').forEach((row, index) => {
+                row.querySelector('[data-cell="index"]').textContent = index + 1;
+            });
+        };
+
+        const createRow = (data = {}) => {
+            const tr = document.createElement('tr');
+            tr.setAttribute('draggable', true);
+            tr.innerHTML = `
+                <td data-cell="index"></td>
+                <td data-cell="item" contenteditable="true">${data.item || ''}</td>
+                <td data-cell="description" contenteditable="true">${data.description || ''}</td>
+                <td data-cell="unit" contenteditable="true">${data.unit || ''}</td>
+                <td data-cell="quantity" contenteditable="true" style="text-align:right;">${data.quantity || 1}</td>
+                <td data-cell="price" contenteditable="true" style="text-align:right;">${data.price || 0}</td>
+                <td data-cell="subtotal" style="text-align:right;">0</td>
+                <td class="no-print action-buttons">
+                    <button class="add-row">✚</button>
+                    <button class="delete-row">✖</button>
+                </td>
+            `;
+            return tr;
+        };
+
+        const addRow = (data, insertAfterRow = null) => {
+            const newRow = createRow(data);
+            if (insertAfterRow) {
+                insertAfterRow.parentNode.insertBefore(newRow, insertAfterRow.nextSibling);
+            } else {
+                tableBody.appendChild(newRow);
+            }
+            calculateRow(newRow);
+            updateItemNumbers();
+            calculateTotal();
+        };
+
+        // --- Initialization ---
+        const initialize = () => {
+            const today = new Date();
+            document.getElementById('quote-date').textContent = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            initialData.forEach(item => addRow(item));
+            setLanguage(currentLang);
+        };
+        initialize();
+
+        // --- Event Listeners ---
+        document.querySelector('.lang-switcher').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target.tagName === 'A') {
+                setLanguage(e.target.dataset.lang);
+            }
+        });
+        
+        tableBody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('add-row')) {
+                addRow({}, e.target.closest('tr'));
+            } else if (e.target.classList.contains('delete-row')) {
+                if (tableBody.rows.length > 1) {
+                    e.target.closest('tr').remove();
+                    updateItemNumbers();
+                    calculateTotal();
+                }
+            }
+        });
+
+        tableBody.addEventListener('input', (e) => {
+            const target = e.target;
+            if (target.dataset.cell === 'quantity' || target.dataset.cell === 'price') {
+                const row = target.closest('tr');
+                if (row) {
+                    calculateRow(row);
+                    calculateTotal();
+                }
+            }
+        });
+
+        document.getElementById('export-pdf-btn').addEventListener('click', () => window.print());
+
+        // --- CSV Functionality ---
+        document.getElementById('csv-download-btn').addEventListener('click', () => {
+            const headers = "項次,項目,內容／範圍,單位,數量,單價（NT$）,小計（NT$）";
+            const blob = new Blob(["\uFEFF" + headers], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = translations[currentLang].csv_template_filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        document.getElementById('csv-file').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const lines = event.target.result.split(/\r\n|\n/);
+                const header = lines[0].trim();
+                const expectedHeader = "項次,項目,內容／範圍,單位,數量,單價（NT$）,小計（NT$）";
+
+                if (header !== expectedHeader) {
+                    alert(`${translations[currentLang].csv_header_error}\n${translations[currentLang].csv_expected_header}: ${expectedHeader}\n${translations[currentLang].csv_received_header}: ${header}`);
+                    e.target.value = '';
+                    return;
+                }
+
+                const data = [];
+                lines.slice(1).forEach(line => {
+                    if (!line) return;
+                    const values = line.split(',');
+                    data.push({
+                        item: values[1] || '', description: values[2] || '', unit: values[3] || '',
+                        quantity: values[4] || 0, price: values[5] || 0,
+                    });
+                });
+                
+                tableBody.innerHTML = '';
+                data.forEach(item => {
+                    const newRow = createRow(item);
+                    tableBody.appendChild(newRow);
+                    calculateRow(newRow);
+                });
+                updateItemNumbers();
+                calculateTotal();
+                e.target.value = '';
+            };
+            reader.readAsText(new Blob([file], { type: 'text/csv;charset=utf-8' }));
+        });
+
+        // --- Drag and Drop Row Sorting ---
+        let draggedRow = null;
+        tableBody.addEventListener('dragstart', (e) => {
+            draggedRow = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => draggedRow.classList.add('dragging'), 0);
+        });
+        tableBody.addEventListener('dragend', () => {
+            if (draggedRow) {
+                draggedRow.classList.remove('dragging');
+                draggedRow = null;
+                updateItemNumbers();
+            }
+        });
+        tableBody.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const targetRow = e.target.closest('tr');
+            if (targetRow && targetRow !== draggedRow) {
+                const rect = targetRow.getBoundingClientRect();
+                const next = (e.clientY - rect.top) / rect.height > 0.5;
+                tableBody.insertBefore(draggedRow, next ? targetRow.nextSibling : targetRow);
+            }
+        });
+        
+        // --- Column Resizing ---
+        document.querySelectorAll('#quote-table th').forEach(th => {
+            const resizer = document.createElement('div');
+            resizer.className = 'resizer no-print';
+            if (th.querySelector('.no-print')) return; // Don't add to Actions column
+            th.appendChild(resizer);
+            
+            resizer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const startX = e.clientX;
+                const startWidth = th.offsetWidth;
+                const onMouseMove = (me) => {
+                    const newWidth = startWidth + (me.clientX - startX);
+                    if (newWidth > 40) th.style.width = `${newWidth}px`;
+                };
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        });
+    });
+    </script>
+</body>
+</html>
