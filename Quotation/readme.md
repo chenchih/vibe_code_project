@@ -10,7 +10,11 @@
 - Step1 discuss with chatgpt to create prd document 
 - Step2 it will generate md file
 - Step3 access google ai studio, attached md file, and tell it to convert to html file
-prompt:`幫我製作成 html file` or `output.PNG`
+
+> **prompt**:
+>>- `幫我製作成 html file` or 
+>> - `幫我製作成 html file，有英文跟中文連結`
+
 - Step4 done, use netify to host it
 
 ## output
