@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>即時課堂同步翻譯系統</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 設定 Tailwind 樣式，使用 Inter 字體 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+        }
+        /* 隱藏預設的文本區域焦點輪廓，使用 Tailwind 類別 */
+        textarea:focus {
+            outline: none;
+        }
+        /* 自定義滾動條樣式，讓輸出更美觀 */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl p-6 md:p-10">
+        
+        <!-- 分頁導航區塊 -->
+        <div class="flex border-b mb-6">
+            <button id="tab-voice" class="py-3 px-6 text-lg font-medium border-b-2 border-blue-600 text-blue-600 transition duration-150" data-view="voice">英文 -> 中文翻譯</button>
+            <button id="tab-universal" class="py-3 px-6 text-lg font-medium text-gray-500 hover:text-blue-600 hover:border-b-2 hover:border-blue-300 transition duration-150" data-view="universal">多國語音翻譯</button>
+            <button id="tab-text" class="py-3 px-6 text-lg font-medium text-gray-500 hover:text-blue-600 hover:border-b-2 hover:border-blue-300 transition duration-150" data-view="text">文字貼上處理</button>
+        </div>
+
+        <h1 class="text-3xl font-extrabold text-blue-700 mb-2">即時課堂同步翻譯系統</h1>
+        <p class="text-gray-600 mb-6" id="app-description">資深工程師為您設計：優化連續語音辨識與低延遲翻譯</p>
+
+        <!-- 1. 英文 -> 中文翻譯視圖 (Voice View - Fixed) -->
+        <div id="voice-view">
+            <!-- 控制區塊 -->
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-6 p-4 bg-gray-50 rounded-lg border">
+                <div class="flex items-center space-x-4 mb-4 sm:mb-0">
+                    <button id="startButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md transform hover:scale-[1.02]">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a1 1 0 01-1-1v-2a1 1 0 011-1m-4 5h4"></path></svg>
+                        開始收聽 (英文)
+                    </button>
+                    <button id="stopButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md transform hover:scale-[1.02] opacity-50 cursor-not-allowed" disabled>
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
+                        停止
+                    </button>
+                </div>
+                <div id="status" class="text-lg font-semibold text-gray-500">
+                    狀態：準備中...
+                </div>
+            </div>
+
+            <!-- 翻譯輸出區塊 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- 英文逐字稿 (即時且流暢) -->
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 shadow-inner min-h-[300px] flex flex-col">
+                    <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">英文逐字稿 (English Transcript)</h2>
+                    <div id="englishTranscript" class="text-gray-900 text-base leading-relaxed flex-grow overflow-y-auto custom-scroll">
+                        <p class="text-gray-400">按下「開始收聽」按鈕，並允許瀏覽器使用麥克風。即時的英文語音辨識結果會在此處流暢顯示。</p>
+                    </div>
+                </div>
+
+                <!-- 繁體中文同步翻譯 (分句處理) -->
+                <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 shadow-inner min-h-[300px] flex flex-col">
+                    <h2 class="text-xl font-bold text-yellow-800 border-b pb-2 mb-3">繁體中文翻譯 (Traditional Chinese Translation)</h2>
+                    <div id="chineseTranslationDiv" class="text-gray-900 text-lg leading-relaxed font-medium flex-grow overflow-y-auto custom-scroll">
+                        <p class="text-gray-400">當完整的英文句子辨識完成後，系統會立即進行翻譯，並在此處同步顯示中文意思。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 3. 多國語音翻譯視圖 (Universal View - Dynamic) -->
+        <div id="universal-view" class="hidden">
+            <div class="p-4 bg-gray-50 rounded-lg border mb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-3">語言設定</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="sourceLangSelect" class="block text-sm font-medium text-gray-700 mb-1">來源語言 (語音輸入)</label>
+                        <select id="sourceLangSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"></select>
+                    </div>
+                    <div>
+                        <label for="targetLangSelect" class="block text-sm font-medium text-gray-700 mb-1">目標語言 (翻譯輸出)</label>
+                        <select id="targetLangSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制區塊 -->
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-6 p-4 bg-gray-50 rounded-lg border">
+                <div class="flex items-center space-x-4 mb-4 sm:mb-0">
+                    <button id="uniStartButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md transform hover:scale-[1.02]">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a1 1 0 01-1-1v-2a1 1 0 011-1m-4 5h4"></path></svg>
+                        開始收聽
+                    </button>
+                    <button id="uniStopButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md transform hover:scale-[1.02] opacity-50 cursor-not-allowed" disabled>
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
+                        停止
+                    </button>
+                </div>
+                <div id="uniStatus" class="text-lg font-semibold text-gray-500">
+                    狀態：請選擇語言後開始...
+                </div>
+            </div>
+
+            <!-- 翻譯輸出區塊 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 來源語言逐字稿 -->
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 shadow-inner min-h-[300px] flex flex-col">
+                    <h2 id="uniSourceTitle" class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">來源語言逐字稿</h2>
+                    <div id="uniSourceTranscript" class="text-gray-900 text-base leading-relaxed flex-grow overflow-y-auto custom-scroll">
+                        <p class="text-gray-400">請點擊「開始收聽」並開始說話。</p>
+                    </div>
+                </div>
+
+                <!-- 目標語言同步翻譯 -->
+                <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 shadow-inner min-h-[300px] flex flex-col">
+                    <h2 id="uniTargetTitle" class="text-xl font-bold text-yellow-800 border-b pb-2 mb-3">目標語言翻譯</h2>
+                    <div id="uniTargetTranslationDiv" class="text-gray-900 text-lg leading-relaxed font-medium flex-grow overflow-y-auto custom-scroll">
+                        <p class="text-gray-400">翻譯結果會在此處同步顯示。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 文字貼上視圖 (Text View) - LLM 功能已整合於此 -->
+        <div id="text-view" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 輸入區 (Left Column) -->
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 border-b pb-2 mb-3">貼上英文文字 (English Input)</h2>
+                    <textarea id="textInput" rows="10" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" placeholder="請將您要翻譯或分析的英文文字貼上於此..."></textarea>
+                    
+                    <!-- Button Group -->
+                    <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                        <button id="translateTextButton" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md transform hover:scale-[1.02]">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            開始翻譯 (固定為中文)
+                        </button>
+                        <!-- NEW LLM Feature Button -->
+                        <button id="analyzeTextButton" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md transform hover:scale-[1.02]">
+                            ✨ 提取重點與摘要
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 輸出區 (Right Column - Tabbed) -->
+                <div class="bg-gray-50 border-2 border-gray-200 rounded-xl p-4 shadow-inner min-h-[300px] flex flex-col">
+                    
+                    <!-- Output Tabs -->
+                    <div class="flex mb-4 border-b">
+                        <button id="outputTab-translation" class="py-2 px-4 text-sm font-medium border-b-2 border-yellow-600 text-yellow-600 transition duration-150" data-output="translation">翻譯結果</button>
+                        <button id="outputTab-analysis" class="py-2 px-4 text-sm font-medium text-gray-500 hover:text-indigo-600 transition duration-150" data-output="analysis">深度分析</button>
+                    </div>
+
+                    <!-- Translation Content -->
+                    <div id="translationOutputContent">
+                        <h2 class="text-xl font-bold text-yellow-800 pb-2 mb-3">繁體中文翻譯 (Traditional Chinese Result)</h2>
+                        <div id="textTranslationResult" class="text-gray-900 text-lg leading-relaxed font-medium flex-grow overflow-y-auto custom-scroll">
+                            <p class="text-gray-400">翻譯結果將顯示在這裡。</p>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Content (Hidden by default) -->
+                    <div id="analysisOutputContent" class="hidden">
+                        <h2 class="text-xl font-bold text-indigo-800 pb-2 mb-3">LLM 深度分析 (Deep Analysis)</h2>
+                        <div id="analysisResult" class="text-gray-900 text-base leading-relaxed font-medium flex-grow overflow-y-auto custom-scroll">
+                            <p class="text-gray-400">點擊「✨ 提取重點與摘要」按鈕後，分析結果將顯示於此。</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 錯誤訊息/提示框 (代替 alert()) -->
+    <div id="messageBox" class="fixed bottom-4 right-4 bg-red-600 text-white p-3 rounded-lg shadow-xl hidden transition duration-300"></div>
+
+
+    <script>
+        // 設定 LLM API 參數
+        const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
+
+        // 全域變數
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isListening = false;
+        let isStoppedByUser = false;
+        let finalTranscript = ''; // 儲存最終的英文文字 (累積所有已確認的文本)
+        let lastTranslatedFinalTranscriptLength = 0; 
+        let translationInterval = null; 
+
+        // 支援的語言列表 (代碼用於 Web Speech API，名稱用於 Gemini Prompt)
+        const supportedLanguages = [
+            { code: 'en-US', name: '英文 (English)' },
+            { code: 'zh-TW', name: '中文 (繁體, 台灣)' },
+            { code: 'zh-CN', name: '中文 (簡體, 中國)' },
+            { code: 'ja-JP', name: '日文 (Japanese)' },
+            { code: 'ko-KR', name: '韓文 (Korean)' },
+            { code: 'fr-FR', name: '法文 (French)' },
+            { code: 'de-DE', name: '德文 (German)' },
+            { code: 'es-ES', name: '西班牙文 (Spanish)' },
+        ];
+
+
+        // DOM 元素
+        const tabVoice = document.getElementById('tab-voice');
+        const tabUniversal = document.getElementById('tab-universal'); // NEW
+        const tabText = document.getElementById('tab-text');
+        const voiceView = document.getElementById('voice-view');
+        const universalView = document.getElementById('universal-view'); // NEW
+        const textView = document.getElementById('text-view');
+        const appDescription = document.getElementById('app-description');
+
+        // Fixed Voice Tab (English -> Chinese)
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const statusDisplay = document.getElementById('status');
+        const englishTranscriptDiv = document.getElementById('englishTranscript');
+        const chineseTranslationDiv = document.getElementById('chineseTranslationDiv'); 
+
+        // Universal Voice Tab (Dynamic Language)
+        const sourceLangSelect = document.getElementById('sourceLangSelect'); // NEW
+        const targetLangSelect = document.getElementById('targetLangSelect'); // NEW
+        const uniStartButton = document.getElementById('uniStartButton'); // NEW
+        const uniStopButton = document.getElementById('uniStopButton'); // NEW
+        const uniStatus = document.getElementById('uniStatus'); // NEW
+        const uniSourceTranscript = document.getElementById('uniSourceTranscript'); // NEW
+        const uniTargetTranslationDiv = document.getElementById('uniTargetTranslationDiv'); // NEW
+        const uniSourceTitle = document.getElementById('uniSourceTitle'); // NEW
+        const uniTargetTitle = document.getElementById('uniTargetTitle'); // NEW
+
+        // Text view elements
+        const messageBox = document.getElementById('messageBox');
+        const textInput = document.getElementById('textInput');
+        const translateTextButton = document.getElementById('translateTextButton');
+        const analyzeTextButton = document.getElementById('analyzeTextButton'); 
+        const textTranslationResult = document.getElementById('textTranslationResult');
+        const translationOutputContent = document.getElementById('translationOutputContent');
+        const analysisOutputContent = document.getElementById('analysisOutputContent');
+        const analysisResult = document.getElementById('analysisResult');
+        const outputTabTranslation = document.getElementById('outputTab-translation');
+        const outputTabAnalysis = document.getElementById('outputTab-analysis');
+
+
+        // --- Firebase/API Key Setup (Mandatory Boilerplate) ---
+        const apiKey = typeof __initial_auth_token !== 'undefined' ? '' : ''; // 保持空字串
+        const geminiApiUrl = `${API_URL}?key=${apiKey}`;
+
+        // 顯示訊息框 (代替 alert())
+        function showMessage(message, duration = 3000) {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-red-600', 'bg-green-600');
+            messageBox.classList.add('bg-red-600');
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, duration);
+        }
+
+        // 更新 UI 狀態
+        function updateStatus(status, color = 'text-gray-500', displayElement = statusDisplay) {
+            displayElement.textContent = `狀態：${status}`;
+            displayElement.className = `text-lg font-semibold ${color}`;
+        }
+
+        // 重試機制 (Exponential Backoff)
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        // 處理 HTTP 錯誤
+                        const errorData = await response.json();
+                        throw new Error(`API Error ${response.status}: ${errorData.error?.message || 'Unknown error'}`);
+                    }
+                    return response;
+                } catch (error) {
+                    console.error(`Fetch attempt ${i + 1} failed:`, error.message);
+                    if (i === maxRetries - 1) throw error; // 最後一次嘗試失敗，拋出錯誤
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        // --- 翻譯核心功能 (使用 Gemini API) ---
+        /**
+         * 執行翻譯請求
+         * @param {string} sourceText 要翻譯的文本
+         * @param {string} targetLangName 目標語言名稱 (e.g., '繁體中文', '日文', '英文')
+         * @param {boolean} isFinal 是否為語音模式的最終檢查
+         * @param {HTMLElement} outputElement 翻譯結果輸出的 DOM 元素
+         * @param {HTMLElement} statusElement 狀態顯示元素
+         */
+        async function translateText(sourceText, targetLangName, isFinal = false, outputElement = chineseTranslationDiv, statusElement = statusDisplay) { 
+            if (!sourceText.trim()) return; 
+
+            // 調整系統提示，使其能動態翻譯到任何目標語言
+            const systemPrompt = `你是一位專業翻譯員。將給定的文本翻譯成準確、自然、流暢的${targetLangName}。你只需要輸出翻譯後的文字，不要包含任何額外的解釋或標籤。`;
+
+            const payload = {
+                contents: [{ parts: [{ text: sourceText }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            // 狀態顯示更新 (區分語音和文字模式)
+            if (statusElement === statusDisplay || statusElement === uniStatus) {
+                if (isListening) {
+                    updateStatus('正在收聽中... (翻譯伺服器處理中)', 'text-orange-500', statusElement);
+                } else {
+                    updateStatus(isFinal ? '正在處理最後翻譯...' : '翻譯中...', 'text-orange-500', statusElement);
+                }
+            } else {
+                // 文字模式時，狀態顯示在 statusDisplay (固定)
+                updateStatus('正在翻譯文字...', 'text-orange-500', statusDisplay);
+                switchOutputTab('translation'); 
+            }
+
+            try {
+                const response = await fetchWithRetry(geminiApiUrl, options);
+                const result = await response.json();
+                const translatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || '翻譯失敗。';
+
+                // 將翻譯結果附加到正確的輸出區
+                const p = document.createElement('p');
+                
+                if (outputElement === chineseTranslationDiv || outputElement === uniTargetTranslationDiv) {
+                    // 語音模式：持續附加
+                    p.className = 'py-1 text-gray-800 border-b border-yellow-100 last:border-b-0';
+                } else {
+                    // 文字模式：單次替換內容
+                    outputElement.innerHTML = ''; 
+                    p.className = 'text-gray-900 leading-relaxed font-medium';
+                }
+                
+                p.innerHTML = translatedText.trim();
+                outputElement.appendChild(p);
+                
+                // 自動捲動
+                outputElement.scrollTop = outputElement.scrollHeight;
+
+            } catch (error) {
+                console.error('翻譯 API 呼叫失敗:', error);
+                showMessage(`翻譯服務暫時不可用: ${error.message}`);
+            }
+            
+            // 狀態恢復
+            if (statusElement === statusDisplay || statusElement === uniStatus) {
+                if (isListening) {
+                    updateStatus('正在收聽中...', 'text-green-600', statusElement);
+                } else if (isFinal) {
+                    updateStatus('已停止 (完成最終翻譯)', 'text-gray-500', statusElement);
+                }
+            } else {
+                updateStatus('文字翻譯完成', 'text-blue-600', statusDisplay);
+            }
+        }
+
+        // [語音模式] 定期檢查並翻譯累積的最終文本 (固定 E->C)
+        function checkAndTranslate(isFinalCheck = false) {
+            if (!isFinalCheck && !isListening) return;
+
+            const currentFinalLength = finalTranscript.length;
+            
+            if (currentFinalLength > lastTranslatedFinalTranscriptLength) {
+                const newSegment = finalTranscript.substring(lastTranslatedFinalTranscriptLength).trim();
+
+                if (newSegment.length > 0) {
+                    // 固定翻譯為繁體中文
+                    translateText(newSegment, '繁體中文', isFinalCheck, chineseTranslationDiv, statusDisplay);
+                    lastTranslatedFinalTranscriptLength = currentFinalLength; 
+                } else if (isFinalCheck) {
+                    updateStatus('已停止 (完成最終翻譯)', 'text-gray-500', statusDisplay);
+                }
+            } else if (isFinalCheck) {
+                updateStatus('已停止 (無新翻譯)', 'text-gray-500', statusDisplay);
+            }
+        }
+        
+        // [多國語音模式] 定期檢查並翻譯累積的最終文本 (動態語言)
+        function uniCheckAndTranslate(isFinalCheck = false) {
+            if (!isFinalCheck && !isListening) return;
+
+            const currentFinalLength = finalTranscript.length;
+            const targetLangName = targetLangSelect.options[targetLangSelect.selectedIndex].text;
+            
+            if (currentFinalLength > lastTranslatedFinalTranscriptLength) {
+                const newSegment = finalTranscript.substring(lastTranslatedFinalTranscriptLength).trim();
+
+                if (newSegment.length > 0) {
+                    // 動態翻譯為目標語言
+                    translateText(newSegment, targetLangName, isFinalCheck, uniTargetTranslationDiv, uniStatus);
+                    lastTranslatedFinalTranscriptLength = currentFinalLength; 
+                } else if (isFinalCheck) {
+                    updateStatus('已停止 (完成最終翻譯)', 'text-gray-500', uniStatus);
+                }
+            } else if (isFinalCheck) {
+                updateStatus('已停止 (無新翻譯)', 'text-gray-500', uniStatus);
+            }
+        }
+
+
+        // [文字模式] 處理文字輸入翻譯
+        async function translateTextContent() {
+            const textToTranslate = textInput.value.trim();
+            if (textToTranslate.length === 0) {
+                showMessage("請先在輸入框中貼上要翻譯的英文文本。", 3000);
+                textTranslationResult.innerHTML = '<p class="text-gray-400">翻譯結果將顯示在這裡。</p>';
+                return;
+            }
+            // 固定翻譯為繁體中文
+            translateText(textToTranslate, '繁體中文', false, textTranslationResult, statusDisplay);
+        }
+
+        // [文字模式] LLM 深度分析功能
+        async function analyzeTextContent() {
+            const textToAnalyze = textInput.value.trim();
+            if (textToAnalyze.length === 0) {
+                showMessage("請先在輸入框中貼上要分析的英文文本。", 3000);
+                analysisResult.innerHTML = '<p class="text-gray-400">點擊「✨ 提取重點與摘要」按鈕後，分析結果將顯示於此。</p>';
+                return;
+            }
+
+            analysisResult.innerHTML = '<p class="text-gray-500 italic">正在分析內容與提取重點...</p>';
+            updateStatus('正在進行 LLM 深度分析...', 'text-indigo-600', statusDisplay);
+            switchOutputTab('analysis'); 
+
+            const systemPrompt = "你是一位專業的學術助手。請根據用戶提供的文本內容，輸出一個 JSON 格式的結果，包含精確的摘要和 3 個最重要的關鍵概念。所有輸出（包括摘要和關鍵概念）都必須是繁體中文。";
+
+            const userQuery = `請分析以下課堂文本，並提供摘要和關鍵概念：\n\n---START OF TEXT---\n${textToAnalyze}\n---END OF TEXT---`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "summary_tc": { "type": "STRING", "description": "內容的精簡繁體中文摘要，長度不超過100字。" },
+                            "key_concepts_tc": {
+                                "type": "ARRAY",
+                                "items": { "type": "STRING" },
+                                "description": "3個最重要的繁體中文關鍵概念或詞彙。"
+                            }
+                        },
+                        "propertyOrdering": ["summary_tc", "key_concepts_tc"]
+                    }
+                }
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            try {
+                const response = await fetchWithRetry(geminiApiUrl, options);
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!jsonText) throw new Error("API did not return structured content.");
+
+                const parsedJson = JSON.parse(jsonText);
+                
+                const summary = parsedJson.summary_tc || "無法生成摘要。";
+                const concepts = parsedJson.key_concepts_tc || [];
+
+                let conceptsHtml = concepts.length > 0 ? 
+                    `<ul class="list-disc list-inside space-y-1 mt-2 text-base text-gray-700 pl-4">` +
+                    concepts.map(c => `<li class="font-normal">${c}</li>`).join('') +
+                    `</ul>` : 
+                    `<p class="text-gray-500 italic mt-2">未提取到關鍵概念。</p>`;
+
+                analysisResult.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-semibold text-lg text-indigo-700 border-b pb-1">摘要 (Summary)</h3>
+                            <p class="mt-2 text-gray-800 leading-relaxed">${summary}</p>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg text-indigo-700 border-b pb-1">關鍵概念 (Key Concepts)</h3>
+                            ${conceptsHtml}
+                        </div>
+                    </div>
+                `;
+                updateStatus('LLM 分析完成', 'text-indigo-600', statusDisplay);
+
+            } catch (error) {
+                console.error('深度分析 API 呼叫失敗:', error);
+                analysisResult.innerHTML = `<p class="text-red-600">深度分析失敗: ${error.message}</p>`;
+                showMessage(`深度分析服務暫時不可用: ${error.message}`);
+                updateStatus('LLM 分析失敗', 'text-red-600', statusDisplay);
+            }
+        }
+        
+        // --- 語音辨識初始化與控制 (通用函數) ---
+        /**
+         * 設置語音辨識器
+         * @param {string} langCode 語音辨識使用的語言代碼 (e.g., 'en-US')
+         * @param {HTMLElement} transcriptDiv 輸出逐字稿的 DOM 元素
+         * @param {HTMLElement} statusElement 狀態顯示元素
+         * @param {function} onEndCallback 結束時呼叫的回調函數 (checkAndTranslate 或 uniCheckAndTranslate)
+         */
+        function setupRecognition(langCode, transcriptDiv, statusElement, onEndCallback) {
+            if (!SpeechRecognition) {
+                showMessage('抱歉，您的瀏覽器不支援 Web Speech API 語音辨識功能。請使用 Chrome 或 Edge 瀏覽器。');
+                updateStatus('不支援', 'text-red-600', statusElement);
+                return null;
+            }
+
+            const currentRecognition = new SpeechRecognition();
+            currentRecognition.continuous = true; 
+            currentRecognition.interimResults = true; 
+            currentRecognition.lang = langCode; 
+            
+            recognition = currentRecognition; // 更新全域 recognition 實例
+
+            let currentInterimText = ''; 
+
+            currentRecognition.onresult = (event) => {
+                let interimTranscript = '';
+                let newFinalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        newFinalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (newFinalTranscript.length > 0) {
+                    finalTranscript += newFinalTranscript;
+                    transcriptDiv.innerHTML = `<p class="text-gray-900">${finalTranscript.trim()}</p><span id="interimPlaceholder" class="text-gray-400"></span>`;
+                    currentInterimText = '';
+                }
+
+                if (interimTranscript.length > 0) {
+                    currentInterimText = interimTranscript;
+                    let interimPlaceholder = transcriptDiv.querySelector('#interimPlaceholder');
+                    if (!interimPlaceholder) {
+                         interimPlaceholder = document.createElement('span');
+                         interimPlaceholder.id = 'interimPlaceholder';
+                         interimPlaceholder.className = 'text-gray-400 font-light italic';
+                         transcriptDiv.appendChild(interimPlaceholder);
+                    }
+                    interimPlaceholder.textContent = currentInterimText;
+                }
+                
+                transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+                updateStatus('正在收聽中...', 'text-green-600', statusElement);
+            };
+
+            currentRecognition.onend = () => {
+                if (isListening && !isStoppedByUser) {
+                    console.log('辨識停止，正在自動重啟...');
+                    updateStatus('自動重啟中...', 'text-blue-500', statusElement);
+                    setTimeout(() => {
+                        try {
+                            currentRecognition.start();
+                        } catch (e) {
+                            console.error('重啟失敗', e);
+                            showMessage('語音辨識重啟失敗。請嘗試手動重新啟動。');
+                            stopListening(onEndCallback, statusElement);
+                        }
+                    }, 500); 
+                } else {
+                    if (!isStoppedByUser) {
+                        updateStatus('已停止', 'text-gray-500', statusElement);
+                    }
+                }
+            };
+
+            currentRecognition.onerror = (event) => {
+                console.error('語音辨識錯誤:', event.error);
+                let message = `語音錯誤: ${event.error}`;
+                if (event.error === 'not-allowed') {
+                    message = '請允許瀏覽器使用麥克風。';
+                } else if (event.error === 'network') {
+                    message = '請檢查網路連線。';
+                }
+                showMessage(message);
+                stopListening(onEndCallback, statusElement);
+            };
+            
+            return currentRecognition;
+        }
+        
+        // 通用停止函數
+        function stopListening(onEndCallback, statusElement, startBtn = startButton, stopBtn = stopButton) {
+            if (!isListening) return;
+
+            if (translationInterval) {
+                clearInterval(translationInterval);
+                translationInterval = null;
+            }
+            
+            onEndCallback(true);
+
+            isListening = false;
+            isStoppedByUser = true;
+            if (recognition) {
+                recognition.stop();
+            }
+
+            startBtn.disabled = false;
+            startBtn.classList.replace('bg-gray-400', 'bg-green-600');
+            startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            stopBtn.disabled = true;
+            stopBtn.classList.replace('bg-red-600', 'bg-gray-400');
+            stopBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            if (finalTranscript.length === lastTranslatedFinalTranscriptLength) {
+                 updateStatus('已停止 (無新翻譯)', 'text-gray-500', statusElement);
+            }
+        }
+        
+        // 通用開始函數
+        function startListening(langCode, transcriptDiv, translationDiv, statusElement, checkTranslateCallback, startBtn, stopBtn) {
+             if (isListening) return;
+
+            // 重置狀態
+            isListening = true;
+            isStoppedByUser = false;
+            finalTranscript = '';
+            lastTranslatedFinalTranscriptLength = 0;
+            transcriptDiv.innerHTML = '';
+            translationDiv.innerHTML = '';
+            
+            // 設置並開始辨識
+            setupRecognition(langCode, transcriptDiv, statusElement, checkTranslateCallback);
+            if (!recognition) return;
+
+            try {
+                recognition.start();
+                updateStatus('正在收聽中...', 'text-green-600', statusElement);
+                
+                translationInterval = setInterval(checkTranslateCallback, 4000); 
+
+                startBtn.disabled = true;
+                startBtn.classList.replace('bg-green-600', 'bg-gray-400');
+                startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                stopBtn.disabled = false;
+                stopBtn.classList.replace('bg-gray-400', 'bg-red-600');
+                stopBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } catch (e) {
+                showMessage(`無法啟動語音辨識: ${e.message}`);
+                stopListening(checkTranslateCallback, statusElement, startBtn, stopBtn);
+            }
+        }
+
+
+        // --- 處理固定 E->C 模式 (Voice View) ---
+        function handleStartFixedVoice() {
+            startListening('en-US', englishTranscriptDiv, chineseTranslationDiv, statusDisplay, checkAndTranslate, startButton, stopButton);
+        }
+
+        function handleStopFixedVoice() {
+            stopListening(checkAndTranslate, statusDisplay, startButton, stopButton);
+        }
+        
+        // --- 處理動態語言模式 (Universal View) ---
+        function handleStartUniversalVoice() {
+            const sourceLangCode = sourceLangSelect.value;
+            const targetLangName = targetLangSelect.options[targetLangSelect.selectedIndex].text;
+            
+            if (!sourceLangCode) {
+                 updateStatus('錯誤：請選擇來源語言', 'text-red-500', uniStatus);
+                 showMessage('請選擇來源語言');
+                 return;
+            }
+            if (!targetLangName) {
+                 updateStatus('錯誤：請選擇目標語言', 'text-red-500', uniStatus);
+                 showMessage('請選擇目標語言');
+                 return;
+            }
+
+            // 更新標題
+            uniSourceTitle.textContent = `來源語言逐字稿 (${sourceLangSelect.options[sourceLangSelect.selectedIndex].text})`;
+            uniTargetTitle.textContent = `目標語言翻譯 (${targetLangName})`;
+
+            startListening(sourceLangCode, uniSourceTranscript, uniTargetTranslationDiv, uniStatus, uniCheckAndTranslate, uniStartButton, uniStopButton);
+        }
+
+        function handleStopUniversalVoice() {
+            stopListening(uniCheckAndTranslate, uniStatus, uniStartButton, uniStopButton);
+        }
+
+
+        // --- 視圖切換邏輯 ---
+        function switchView(viewName) {
+            // 1. 如果正在語音模式下收聽，必須先停止所有模式的收聽
+            if (isListening) {
+                if (document.getElementById('voice-view').classList.contains('hidden')) {
+                    handleStopUniversalVoice();
+                } else {
+                    handleStopFixedVoice();
+                }
+            }
+
+            // 2. 顯示/隱藏內容
+            voiceView.classList.add('hidden');
+            universalView.classList.add('hidden'); // NEW
+            textView.classList.add('hidden');
+
+            tabVoice.classList.remove('border-blue-600', 'text-blue-600');
+            tabUniversal.classList.remove('border-blue-600', 'text-blue-600'); // NEW
+            tabText.classList.remove('border-blue-600', 'text-blue-600');
+            
+            tabVoice.classList.add('text-gray-500', 'hover:border-b-2');
+            tabUniversal.classList.add('text-gray-500', 'hover:border-b-2'); // NEW
+            tabText.classList.add('text-gray-500', 'hover:border-b-2');
+
+
+            if (viewName === 'voice') {
+                voiceView.classList.remove('hidden');
+                tabVoice.classList.add('border-blue-600', 'text-blue-600');
+                tabVoice.classList.remove('text-gray-500', 'hover:border-b-2');
+                appDescription.textContent = '資深工程師為您設計：優化連續語音辨識與低延遲翻譯';
+                updateStatus(isListening ? '正在收聽中...' : '點擊「開始收聽」啟動', isListening ? 'text-green-600' : 'text-gray-600', statusDisplay);
+            } else if (viewName === 'universal') { // NEW
+                universalView.classList.remove('hidden');
+                tabUniversal.classList.add('border-blue-600', 'text-blue-600');
+                tabUniversal.classList.remove('text-gray-500', 'hover:border-b-2');
+                appDescription.textContent = '選擇來源和目標語言，進行多國語音即時翻譯。';
+                updateStatus(isListening ? '正在收聽中...' : '請選擇語言後點擊「開始收聽」', isListening ? 'text-green-600' : 'text-gray-600', uniStatus);
+            } else { // viewName === 'text'
+                textView.classList.remove('hidden');
+                tabText.classList.add('border-blue-600', 'text-blue-600');
+                tabText.classList.remove('text-gray-500', 'hover:border-b-2');
+                appDescription.textContent = '只需貼上文字，即可獲得翻譯或 LLM 深度分析。';
+                updateStatus('準備翻譯或分析文字', 'text-gray-600', statusDisplay);
+                switchOutputTab('translation');
+            }
+        }
+        
+        // --- 文字模式輸出分頁切換 ---
+        function switchOutputTab(tabName) {
+            if (tabName === 'translation') {
+                translationOutputContent.classList.remove('hidden');
+                analysisOutputContent.classList.add('hidden');
+                outputTabTranslation.classList.add('border-yellow-600', 'text-yellow-600');
+                outputTabTranslation.classList.remove('text-gray-500');
+                outputTabAnalysis.classList.remove('border-indigo-600', 'text-indigo-600');
+                outputTabAnalysis.classList.add('text-gray-500');
+            } else { // analysis
+                analysisOutputContent.classList.remove('hidden');
+                translationOutputContent.classList.add('hidden');
+                outputTabAnalysis.classList.add('border-indigo-600', 'text-indigo-600');
+                outputTabAnalysis.classList.remove('text-gray-500');
+                outputTabTranslation.classList.remove('border-yellow-600', 'text-yellow-600');
+                outputTabTranslation.classList.add('text-gray-500');
+            }
+        }
+        
+        // --- 填充語言選擇器 ---
+        function populateLanguageSelectors() {
+            supportedLanguages.forEach(lang => {
+                const sourceOption = document.createElement('option');
+                sourceOption.value = lang.code;
+                sourceOption.textContent = lang.name;
+                sourceLangSelect.appendChild(sourceOption);
+
+                const targetOption = document.createElement('option');
+                targetOption.value = lang.code;
+                targetOption.textContent = lang.name;
+                targetLangSelect.appendChild(targetOption);
+            });
+            
+            // 設定預設值：來源為英文，目標為繁體中文
+            sourceLangSelect.value = 'en-US'; 
+            targetLangSelect.value = 'zh-TW'; 
+        }
+
+
+        // --- 事件監聽器 ---
+        // 固定模式按鈕
+        startButton.addEventListener('click', handleStartFixedVoice);
+        stopButton.addEventListener('click', handleStopFixedVoice);
+        
+        // 多國模式按鈕 (NEW)
+        uniStartButton.addEventListener('click', handleStartUniversalVoice);
+        uniStopButton.addEventListener('click', handleStopUniversalVoice);
+
+        // 文字模式按鈕
+        translateTextButton.addEventListener('click', translateTextContent);
+        analyzeTextButton.addEventListener('click', analyzeTextContent); 
+        
+        // 輸出分頁按鈕 (文字模式)
+        outputTabTranslation.addEventListener('click', () => switchOutputTab('translation'));
+        outputTabAnalysis.addEventListener('click', () => switchOutputTab('analysis'));
+
+        // Tab 切換按鈕
+        tabVoice.addEventListener('click', () => switchView('voice'));
+        tabUniversal.addEventListener('click', () => switchView('universal')); // NEW
+        tabText.addEventListener('click', () => switchView('text'));
+
+        // 初始化檢查
+        window.onload = function() {
+            populateLanguageSelectors(); // 填充語言選擇器
+            switchView('voice'); // 預設顯示固定翻譯視圖
+        }
+
+    </script>
+</body>
+</html>

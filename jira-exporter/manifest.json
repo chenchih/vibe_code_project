@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Jira to AI Exporter",
+  "version": "1.0",
+  "description": "Exports Jira ticket content to text/markdown, removing user details for privacy.",
+  "permissions": ["activeTab", "scripting"],
+  
+  "icons": {
+    "128": "image.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Export Jira Ticket",
+    "default_icon": {
+      "128": "image.png"
+    }
+  }
+}

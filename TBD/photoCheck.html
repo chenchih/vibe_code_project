@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交友軟體大頭照評分器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // 確保在運行環境中定義了這些變數
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'dating-app-evaluator';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        if (Object.keys(firebaseConfig).length > 0) {
+            const app = initializeApp(firebaseConfig);
+            window.db = getFirestore(app);
+            window.auth = getAuth(app);
+            setLogLevel('debug'); // 啟用 Firebase 偵錯日誌
+
+            // 處理認證
+            (async () => {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(window.auth, initialAuthToken);
+                        console.log("Firebase signed in with custom token.");
+                    } else {
+                        await signInAnonymously(window.auth);
+                        console.log("Firebase signed in anonymously.");
+                    }
+                    window.userId = window.auth.currentUser?.uid || crypto.randomUUID();
+                } catch (error) {
+                    console.error("Firebase Auth Error:", error);
+                }
+            })();
+        } else {
+            console.warn("Firebase configuration not found. Using anonymous session.");
+            window.userId = crypto.randomUUID();
+        }
+    </script>
+    <style>
+        /* 使用 Inter 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .score-display {
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        .score-display.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .photo-slot {
+            aspect-ratio: 1 / 1;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="app" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-6 md:p-10">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">
+            📸 交友軟體大頭照評分器 (AI模擬)
+        </h1>
+        
+        <!-- 性別選擇 -->
+        <div class="mb-8">
+            <label class="block text-lg font-medium text-gray-700 mb-3">
+                選擇您的身份：
+            </label>
+            <div class="flex space-x-4">
+                <button id="select-female" class="gender-select px-6 py-3 rounded-full text-white bg-pink-500 hover:bg-pink-600 transition shadow-lg shadow-pink-200" data-gender="Female">
+                    👩 女生 (Female)
+                </button>
+                <button id="select-male" class="gender-select px-6 py-3 rounded-full text-white bg-blue-500 hover:bg-blue-600 transition shadow-lg shadow-blue-200" data-gender="Male">
+                    👨 男生 (Male)
+                </button>
+            </div>
+            <p id="gender-status" class="mt-2 text-sm font-semibold text-red-500">請先選擇身份</p>
+        </div>
+
+        <!-- 照片上傳區 -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">上傳照片 (最多 6 張)：</h2>
+            <div id="photo-container" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- 6 個照片上傳槽 -->
+            </div>
+        </div>
+
+        <!-- 控制按鈕 -->
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-10">
+            <button id="start-button" class="flex-1 px-8 py-4 rounded-xl text-white font-bold bg-green-500 hover:bg-green-600 transition duration-150 shadow-xl shadow-green-300 disabled:bg-gray-400" disabled>
+                🚀 開始 AI 評分
+            </button>
+            <button id="clear-button" class="flex-1 px-8 py-4 rounded-xl text-gray-700 font-bold bg-gray-200 hover:bg-gray-300 transition duration-150 shadow-md disabled:opacity-50">
+                🧹 清除所有照片
+            </button>
+        </div>
+        
+        <!-- 載入及訊息顯示 -->
+        <div id="message-area" class="min-h-16 flex items-center justify-center mb-6">
+            <div id="loading-indicator" class="hidden flex items-center space-x-3 text-lg font-medium text-indigo-600">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                正在請 AI 專家評估中，請稍候...
+            </div>
+            <p id="error-message" class="text-red-500 hidden"></p>
+        </div>
+
+        <!-- 總體評分結果 -->
+        <div id="overall-result" class="score-display p-6 bg-indigo-50 rounded-2xl border-2 border-indigo-200 mt-8">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-4 flex items-center">
+                ✨ 交友市場整體表現：<span id="overall-score-value" class="ml-3 text-4xl text-indigo-600">--</span>/100
+            </h2>
+            
+            <!-- 修改 AI 綜合建議區塊的格式，使其更專業 -->
+            <div class="border-t pt-4 mt-4">
+                <p class="text-xl font-bold text-gray-700 mb-2">AI 綜合建議:</p>
+                <!-- 建議內容使用獨立區塊，確保換行和專業感 -->
+                <p id="overall-feedback" class="text-gray-800 leading-relaxed bg-white p-3 rounded-lg border italic">尚無評估結果。</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=";
+        const apiKey = ""; // Canvas 將在執行時提供金鑰
+
+        let selectedGender = null;
+        const maxPhotos = 6;
+        const photoData = new Array(maxPhotos).fill(null); // 存儲 base64 數據
+
+        const app = document.getElementById('app');
+        const photoContainer = document.getElementById('photo-container');
+        const startButton = document.getElementById('start-button');
+        const clearButton = document.getElementById('clear-button');
+        const overallResult = document.getElementById('overall-result');
+        const genderStatus = document.getElementById('gender-status');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+
+        // --- New Keyword Highlighting Function ---
+        function highlightKeywords(text) {
+            if (!text) return '尚無評估結果。';
+
+            // 根據使用者指示更新關鍵字及其顏色樣式
+            const keywords = [
+                // 行動建議 (藍色) - 包含 建議, 多樣性, 肢體語言, 改善, 調整
+                { word: '建議', color: 'text-blue-600' },
+                { word: '多樣性', color: 'text-blue-600' },
+                { word: '肢體語言', color: 'text-blue-600' },
+                { word: '改善', color: 'text-blue-600' },
+                { word: '調整', color: 'text-blue-600' },
+                
+                // Positive/Good (綠色) - 包含 陽光, 開心, 自然光線, 好相處, 清晰等所有正面詞彙
+                { word: '清晰', color: 'text-green-600' },
+                { word: '笑容', color: 'text-green-600' },
+                { word: '自然', color: 'text-green-600' },
+                { word: '高分', color: 'text-green-600' },
+                { word: '質感', color: 'text-green-600' },
+                { word: '自信', color: 'text-green-600' },
+                { word: '吸引人', color: 'text-green-600' },
+                { word: '專業', color: 'text-green-600' },
+                { word: '陽光', color: 'text-green-600' },
+                { word: '開心', color: 'text-green-600' },
+                { word: '好相處', color: 'text-green-600' },
+                { word: '自然光線', color: 'text-green-600' },
+                { word: '光線充足', color: 'text-green-600' },
+                { word: '戶外', color: 'text-green-600' },
+                { word: '微笑', color: 'text-green-600' },
+                { word: '有活力', color: 'text-green-600' },
+                { word: '真誠', color: 'text-green-600' },
+                { word: '靦腆', color: 'text-green-600' },
+                
+                // Negative/Improvement (紅色) - 包含 嚴肅, 單調, 冷冷, 模糊, 低分等所有負面詞彙
+                { word: '模糊', color: 'text-red-600' },
+                { word: '單調', color: 'text-red-600' },
+                { word: '背景雜亂', color: 'text-red-600' },
+                { word: '低分', color: 'text-red-600' },
+                { word: '光線不足', color: 'text-red-600' },
+                { word: '裁剪', color: 'text-red-600' },
+                { word: '嚴肅', color: 'text-red-600' },
+                { word: '冷冷', color: 'text-red-600' },
+                { word: '冷淡', color: 'text-red-600' },
+                { word: '陰影', color: 'text-red-600' },
+                { word: '過曝', color: 'text-red-600' },
+                { word: '僵硬', color: 'text-red-600' },
+
+                // Neutral/Context (靛色)
+                { word: '大頭貼', color: 'text-indigo-600' },
+                { word: '背景', color: 'text-indigo-600' },
+                { word: '光線', color: 'text-indigo-600' },
+                { word: '姿勢', color: 'text-indigo-600' },
+                { word: '主題', color: 'text-indigo-600' },
+            ];
+
+            let highlightedText = text;
+
+            // 確保長的關鍵字先被替換
+            keywords.sort((a, b) => b.word.length - a.word.length);
+
+            keywords.forEach(({ word, color }) => {
+                // 使用正則表達式進行全域替換，確保匹配到的詞語被完全包裹在 span 標籤中
+                const regex = new RegExp(`(${word})`, 'g');
+                highlightedText = highlightedText.replace(regex, `<span class="${color} font-bold">$1</span>`);
+            });
+
+            return highlightedText;
+        }
+
+        // --- 1. 初始化照片上傳槽 ---
+        function initializePhotoSlots() {
+            photoContainer.innerHTML = '';
+            for (let i = 0; i < maxPhotos; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'photo-slot relative bg-gray-100 border-4 border-dashed border-gray-300 rounded-xl overflow-hidden cursor-pointer hover:border-indigo-400 transition group flex flex-col justify-center items-center p-2';
+                slot.innerHTML = `
+                    <input type="file" id="photo-input-${i}" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" data-index="${i}">
+                    <div id="preview-${i}" class="w-full h-full flex justify-center items-center text-gray-500 group-hover:text-indigo-500 flex-col">
+                        <svg class="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span class="text-sm">照片 ${i + 1}</span>
+                    </div>
+                    <div id="score-box-${i}" class="score-display absolute bottom-0 left-0 right-0 p-1 bg-white bg-opacity-80 backdrop-blur-sm text-center text-xl font-bold rounded-t-lg shadow-inner flex flex-col items-center justify-center">
+                        <span class="text-gray-700">--</span>/100
+                        <span class="text-sm mt-1 font-semibold text-gray-500" id="rating-text-${i}"></span>
+                        <div id="optimization-link-${i}" class="mt-2"></div>
+                    </div>
+                `;
+                photoContainer.appendChild(slot);
+            }
+            attachFileListeners();
+        }
+
+        // --- 2. 檔案監聽與 Base64 轉換 ---
+        function attachFileListeners() {
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', (event) => {
+                    const index = parseInt(event.target.dataset.index);
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const base64Data = e.target.result.split(',')[1];
+                            photoData[index] = { data: base64Data, mimeType: file.type };
+                            
+                            // 顯示預覽圖
+                            const previewDiv = document.getElementById(`preview-${index}`);
+                            previewDiv.innerHTML = `<img src="${e.target.result}" alt="Photo Preview ${index + 1}" class="w-full h-full object-cover rounded-md">`;
+                            
+                            checkReady();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        }
+
+        // --- 3. 性別選擇處理 ---
+        document.querySelectorAll('.gender-select').forEach(button => {
+            button.addEventListener('click', (event) => {
+                // 清除所有按鈕的 active 樣式
+                document.querySelectorAll('.gender-select').forEach(btn => {
+                    btn.classList.remove('ring-4', 'ring-offset-2', 'ring-opacity-75');
+                });
+                
+                // 設定當前按鈕的 active 樣式
+                event.target.classList.add('ring-4', 'ring-offset-2', 'ring-opacity-75');
+
+                selectedGender = event.target.dataset.gender;
+                genderStatus.textContent = `已選擇：${selectedGender === 'Female' ? '女生' : '男生'}`;
+                genderStatus.classList.remove('text-red-500');
+                genderStatus.classList.add('text-green-600');
+                checkReady();
+            });
+        });
+
+        // --- 4. 檢查是否可以開始評分 ---
+        function checkReady() {
+            const hasPhotos = photoData.some(data => data !== null);
+            startButton.disabled = !(selectedGender && hasPhotos);
+        }
+
+        // --- 5. 清除照片功能 ---
+        clearButton.addEventListener('click', () => {
+            photoData.fill(null);
+            initializePhotoSlots(); // 重繪所有槽位
+            startButton.disabled = true;
+            overallResult.classList.remove('visible');
+            document.getElementById('overall-score-value').textContent = '--';
+            document.getElementById('overall-feedback').textContent = '尚無評估結果。';
+            errorMessage.classList.add('hidden');
+            loadingIndicator.classList.add('hidden');
+            genderStatus.textContent = selectedGender ? `已選擇：${selectedGender === 'Female' ? '女生' : '男生'}` : '請先選擇身份';
+            document.querySelectorAll('.gender-select').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-offset-2', 'ring-opacity-75');
+            });
+        });
+
+        // --- 6. API 呼叫 (開始評分) ---
+        startButton.addEventListener('click', async () => {
+            if (!selectedGender) {
+                errorMessage.textContent = '請先選擇您的身份！';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+
+            const activePhotos = photoData.filter(data => data !== null);
+            if (activePhotos.length === 0) {
+                errorMessage.textContent = '請至少上傳一張照片！';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+
+            // UI 狀態更新
+            startButton.disabled = true;
+            clearButton.disabled = true;
+            loadingIndicator.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+            overallResult.classList.remove('visible');
+            
+            // 清除舊分數顯示和標籤
+            for (let i = 0; i < maxPhotos; i++) {
+                const scoreBox = document.getElementById(`score-box-${i}`);
+                const ratingText = document.getElementById(`rating-text-${i}`);
+                const optimizationLink = document.getElementById(`optimization-link-${i}`);
+
+                if (scoreBox) {
+                    scoreBox.querySelector('span').textContent = '--';
+                    scoreBox.classList.remove('visible', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700', 'bg-orange-100', 'text-orange-700', 'bg-red-100', 'text-red-700');
+                }
+                if (ratingText) {
+                    ratingText.textContent = '';
+                    ratingText.className = 'text-sm mt-1 font-semibold'; // 重置樣式
+                }
+                if (optimizationLink) {
+                    optimizationLink.innerHTML = ''; // 清除優化連結 (這是必要的，即使功能已移除)
+                }
+            }
+
+
+            const genderText = selectedGender === 'Female' ? '女性' : '男性';
+
+            // 構建 API 內容
+            const contents = [{
+                role: "user",
+                parts: [
+                    { 
+                        text: `You are an expert in dating app psychology and market trends, specifically providing advice for the Taiwanese market. Analyze the following ${activePhotos.length} images for a dating app profile. The user identifies as ${genderText} (Traditional Chinese: ${genderText}). 
+                            For each image, provide a 'Main Photo Score' (out of 100) indicating how effective it would be as the primary profile picture. Then, provide an 'Overall Profile Score' (out of 100) based on all submitted images combined, considering variety, quality, and composition.
+                            Your response MUST strictly be a JSON object conforming to the provided schema. All text in the 'feedback' field MUST be in Traditional Chinese.` 
+                    }
+                ]
+            }];
+
+            // 加入圖片 parts
+            activePhotos.forEach(photo => {
+                contents[0].parts.push({
+                    inlineData: {
+                        mimeType: photo.mimeType,
+                        data: photo.data
+                    }
+                });
+            });
+
+
+            const payload = {
+                contents: contents,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "overall_score": { "type": "INTEGER", "description": "交友市場整體評分 (0-100)" },
+                            "image_scores": {
+                                "type": "ARRAY",
+                                "description": "每個照片作為大頭照的單獨評分 (0-100)",
+                                "items": { "type": "INTEGER" }
+                            },
+                            "feedback": { "type": "STRING", "description": "給用戶的綜合建議 (用繁體中文)" }
+                        },
+                        required: ["overall_score", "image_scores", "feedback"]
+                    }
+                },
+                systemInstruction: {
+                    parts: [{ text: "You are a professional dating profile photo evaluator. Always respond in Traditional Chinese JSON format." }]
+                }
+            };
+            
+            let resultJson;
+            try {
+                // 實施指數退避重試機制
+                const maxRetries = 5;
+                let delay = 1000;
+                
+                for (let i = 0; i < maxRetries; i++) {
+                    const response = await fetch(API_URL + apiKey, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (rawText) {
+                            try {
+                                resultJson = JSON.parse(rawText);
+                                break; // 成功解析，跳出迴圈
+                            } catch (e) {
+                                console.error("Failed to parse JSON response:", rawText);
+                                throw new Error("API response format error.");
+                            }
+                        }
+                    }
+
+                    if (i < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // 指數增加延遲
+                    } else {
+                        throw new Error("API call failed after multiple retries.");
+                    }
+                }
+                
+                if (resultJson) {
+                    displayResults(resultJson, photoData.map(p => p !== null));
+                } else {
+                    throw new Error("未能從 AI 獲得有效評分結果。");
+                }
+
+            } catch (error) {
+                console.error("API Error:", error);
+                errorMessage.textContent = `評分失敗：${error.message || '無法連接到 AI 服務。'}`;
+                errorMessage.classList.remove('hidden');
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                startButton.disabled = false;
+                clearButton.disabled = false;
+            }
+        });
+
+        // --- 7. 顯示結果 ---
+        function displayResults(data, photoExistsMask) {
+            const { overall_score, image_scores, feedback } = data;
+
+            // 顯示總體分數和建議，使用 innerHTML 來顯示帶顏色的關鍵字
+            document.getElementById('overall-score-value').textContent = overall_score || '--';
+            document.getElementById('overall-feedback').textContent = ''; // 清除舊的文字內容
+            document.getElementById('overall-feedback').innerHTML = highlightKeywords(feedback);
+            overallResult.classList.add('visible');
+
+            // 顯示單張照片分數和文字評語
+            let scoreIndex = 0;
+            for (let i = 0; i < maxPhotos; i++) {
+                const scoreBox = document.getElementById(`score-box-${i}`);
+                const ratingTextSpan = document.getElementById(`rating-text-${i}`);
+                const optimizationLinkDiv = document.getElementById(`optimization-link-${i}`);
+                
+                // 每次都清除優化連結 (確保第一項修改生效)
+                optimizationLinkDiv.innerHTML = '';
+
+
+                if (scoreBox && ratingTextSpan && photoExistsMask[i]) {
+                    const score = image_scores[scoreIndex];
+                    scoreBox.querySelector('span').textContent = score !== undefined ? score : '--';
+                    
+                    // 移除舊的顏色和文字樣式
+                    scoreBox.classList.remove('bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700', 'bg-orange-100', 'text-orange-700', 'bg-red-100', 'text-red-700');
+                    ratingTextSpan.className = 'text-sm mt-1 font-semibold'; // 重置樣式
+
+                    let textRating = '';
+                    let textColorClass = '';
+                    
+                    // 評級標準：
+                    // >= 80: 非常好 (綠色)
+                    // >= 60: 不錯喔 (橙色)
+                    // < 60: 不推薦 (紅色)
+                    if (score >= 80) {
+                        textRating = '⭐️ 非常好！';
+                        textColorClass = 'text-green-600';
+                        scoreBox.classList.add('bg-green-100', 'text-green-700');
+                    } else if (score >= 60) {
+                        textRating = '👍 不錯喔';
+                        textColorClass = 'text-orange-600'; // 使用橙色
+                        scoreBox.classList.add('bg-orange-100', 'text-orange-700');
+                    } else {
+                        textRating = '👎 不推薦';
+                        textColorClass = 'text-red-600';
+                        scoreBox.classList.add('bg-red-100', 'text-red-700');
+                        
+                        // 已移除優化連結生成邏輯 (符合您的要求)
+                    }
+
+                    ratingTextSpan.textContent = textRating;
+                    ratingTextSpan.classList.add(textColorClass);
+                    
+                    scoreBox.classList.add('visible');
+                    scoreIndex++;
+                } else if (scoreBox) {
+                    // 對於未上傳的槽位，確保分數隱藏且沒有顏色
+                    scoreBox.classList.remove('visible', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700', 'bg-orange-100', 'text-orange-700', 'bg-red-100', 'text-red-700');
+                    if (ratingTextSpan) {
+                        ratingTextSpan.textContent = '';
+                        ratingTextSpan.className = 'text-sm mt-1 font-semibold';
+                    }
+                }
+            }
+        }
+
+        // --- 8. 首次載入 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePhotoSlots();
+            overallResult.classList.add('hidden'); // 初始隱藏結果區塊
+            // 使用 setTimeout 確保 Tailwind 過渡效果在第一次顯示時生效
+            setTimeout(() => overallResult.classList.remove('hidden'), 50);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #ffffff;
+      color: #172b4d;
+    }
+
+    /* Header */
+    .header {
+      padding: 16px;
+      border-bottom: 1px solid #ebecf0;
+      background-color: #fafbfc;
+    }
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #172b4d;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Main Content */
+    .content {
+      padding: 16px;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    button {
+      width: 100%;
+      padding: 10px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .primary {
+      background-color: #0052CC;
+      color: white;
+      border: none;
+    }
+    .primary:hover { background-color: #0065ff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+    .secondary {
+      background-color: #ffffff;
+      color: #172b4d;
+      border: 1px solid #dfe1e6;
+    }
+    .secondary:hover { background-color: #f4f5f7; border-color: #c1c7d0; }
+
+    #status {
+      margin-top: 12px;
+      font-size: 13px;
+      text-align: center;
+      min-height: 20px;
+      color: #00875A;
+      font-weight: 500;
+    }
+
+    /* Professional Footer */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background-color: #f4f5f7;
+      border-top: 1px solid #ebecf0;
+      margin-top: 5px;
+    }
+
+    .footer-btn {
+      background: none;
+      border: none;
+      color: #5e6c84;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .footer-btn:hover {
+      color: #172b4d;
+      background-color: #e3e5e8;
+    }
+    .footer-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    /* About Section */
+    #about-section {
+      display: none;
+      background: #fff;
+      padding: 16px;
+      border-top: 1px solid #ebecf0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #172b4d;
+    }
+    .about-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .version-badge {
+      background: #ebecf0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #42526e;
+    }
+    .about-features {
+      margin: 8px 0;
+      padding-left: 20px;
+      color: #5e6c84;
+    }
+    .about-features li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- Clean Header -->
+  <div class="header">
+    <h3>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#0052CC">
+        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+      </svg>
+      Jira Exporter
+    </h3>
+  </div>
+
+  <div class="content">
+    <div class="btn-group">
+      <button id="copyBtn" class="primary">
+        <span>Copy to Clipboard</span>
+      </button>
+      <button id="downloadBtn" class="secondary">
+        <span>Download .txt</span>
+      </button>
+      <button id="csvBtn" class="secondary">
+        <span>Download .csv</span>
+      </button>
+    </div>
+    
+    <div id="status"></div>
+  </div>
+
+  <!-- Improved About Content -->
+  <div id="about-section">
+    <div class="about-title">
+      <strong>Jira to AI Exporter</strong> 
+      <span id="version-number" class="version-badge">v1.0</span>
+    </div>
+    <p>The fastest way to copy clean Jira ticket data into Plain text for LLM analysis.</p>
+    <ul class="about-features">
+	<li><strong>Parse Jiar Content:</strong> Get Ticket's related field</li>
+      <li><strong>Clean Data:</strong> Removes UI clutter.</li>
+      <li><strong>Formats:</strong> TXT, CSV, or copy Clipboard.</li>
+    </ul>
+    <p style="font-size: 11px; color: #6b778c; margin-top: 10px;">
+      <i>Runs locally without AI</i>
+    </p>
+	<p style="font-size: 11px; color: Blue; margin-top: 10px;">
+	  <i>Author: C.C with AI</i>
+    </p>
+	
+  </div>
+
+  <!-- Professional Footer -->
+  <div class="footer">
+    <button id="aboutBtn" class="footer-btn">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+      About
+    </button>
+    
+    <button id="feedbackBtn" class="footer-btn">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      Feedback
+    </button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
