@@ -45,12 +45,32 @@ Automatically captures the fields that matter most for debugging and analysis:
 
 ## 📖 How to Use
 
-1.  Navigate to any Jira ticket (Cloud or Server).
-2.  Click the **Jira Exporter** icon in your Chrome toolbar.
-3.  Select your desired action:
+### Step 1.  Navigate to any Jira ticket.
+This is an Jiar example for demo, as you can see there are many information, and what the plugin will get are these field of data. 
+- project Name
+- Ticket ID
+- Description of ticket
+- Some step to replicate
+- FW version
+
+If you want to let AI to summarize these then you have to manually copy and paste each field. This plugin will automatic extract the text of these field
+
+![Jiar Example](img/Jiar_ticket.PNG)
+
+### Step 2.  Click the **Jira Exporter** icon in your Chrome toolbar.
+To capture each field of content please click on Jiar exporter
+
+![run jiarexporter](img/Jiar_download_text.PNG)
+
+### Step3  Select your desired action to download
     *   **Copy to Clipboard:** Best for quick AI prompting.
     *   **Download .txt:** Best for documentation or offline notes.
     *   **Download .csv:** Best for spreadsheet analysis.
+
+When Click download will show downloaded and you can compare the Web and Text it the same. 
+![run jiarexporter](img/Compare_Web_Text.PNG)
+
+Now after it extract content into text file, you now can copy the entire information and paste to LLM to analysis it. 
 
 ---
 
@@ -61,8 +81,11 @@ Automatically captures the fields that matter most for debugging and analysis:
 
 ---
 
+
+
 ## 📝 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
+

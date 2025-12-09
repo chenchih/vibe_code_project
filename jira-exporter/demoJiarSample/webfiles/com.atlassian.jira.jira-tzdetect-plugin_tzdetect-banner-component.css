@@ -1,0 +1,2 @@
+/* module-key = 'com.atlassian.jira.jira-tzdetect-plugin:tzdetect-banner-component', location = 'banner/tzdetect-banner.css' */
+#timezone-selection-list{z-index:4001!important;max-height:300px;overflow-y:auto}

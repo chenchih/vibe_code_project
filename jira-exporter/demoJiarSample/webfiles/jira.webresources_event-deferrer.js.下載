@@ -1,0 +1,6 @@
+WRMCB=function(e){var c=console;if(c&&c.log&&c.error){c.log('Error running batched script.');c.error(e);}}
+;
+try {
+/* module-key = 'jira.webresources:event-deferrer', location = '/includes/jira/eventDeferrer/eventDeferrer.js' */
+!function(){"use strict";function t(t){return["A","BUTTON"].some(function(e){return t.target.tagName===e})?t.target:t.target.closest("a, button")}function e(){r&&r(),r=null}function n(){r=null,o.disconnect()}var r=void 0,o=new MutationObserver(function(t,n){var r=!0,o=!1,i=void 0;try{for(var a,c=t[Symbol.iterator]();!(r=(a=c.next()).done);r=!0){var u=a.value;"attributes"!==u.type||u.target.hasAttribute("data-queued-click")||(e(),n.disconnect())}}catch(t){o=!0,i=t}finally{try{!r&&c.return&&c.return()}finally{if(o)throw i}}}),i=function(e){n();var i=t(e);i&&i.dataset.hasOwnProperty("queuedClick")&&(e.preventDefault(),e.stopPropagation(),r=function(){return i.click()},document.body.addEventListener("keydown",n,{once:!0,passive:!0,capture:!0}),o.observe(i,{attributes:!0}))};document.addEventListener("click",i,!0),window.resourcePhaseCheckpoint.interaction.then(function(){setTimeout(function(){document.removeEventListener("click",i,!0),e(),n()})})}();
+}catch(e){WRMCB(e)};

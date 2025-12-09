@@ -1,0 +1,6 @@
+WRMCB=function(e){var c=console;if(c&&c.log&&c.error){c.log('Error running batched script.');c.error(e);}}
+;
+try {
+/* module-key = 'com.atlassian.jira.plugins.jira-quicksearch-plugin:5', location = 'frontend/bundle.5.js' */
+(window.atlassianWebpackJsonpe5ed4b01bb42b7893d8aef5bda9bf664=window.atlassianWebpackJsonpe5ed4b01bb42b7893d8aef5bda9bf664||[]).push([[5],{14:function(e,n,i){"use strict";Object.defineProperty(n,"__esModule",{value:!0}),n.showOnboardingTip=function(){if(0===(0,o.default)(u).length)return;var e={anchor:u,id:"qs-onboarding-tip",isSequence:!1,showCloseButton:!0,closeButtonText:"OK, got it",callbacks:{hide:function(){return a.default.send({name:"quicksearch.onboarding.tip.dissmised"})}},title:"Find your work faster",bodyHtml:(i="Search through all your issues and projects, and have the most important work always at your fingertips. Start typing to search...","<div><p>"+i+"</p></div>")},n=new t.default(e);var i;if(n.isDismissed())return;if(n.show(),!n.isVisible())return void a.default.send({name:"quicksearch.onboarding.tip.notshown"});a.default.send({name:"quicksearch.onboarding.tip.shown"})};var t=d(i(63)),a=d(i(5)),s=d(i(3)),o=d(i(0));function d(e){return e&&e.__esModule?e:{default:e}}var r=s.default,u="#quicksearch-menu:visible"},63:function(e,n){e.exports=require("jira-help-tips/feature/help-tip")}}]);
+}catch(e){WRMCB(e)};

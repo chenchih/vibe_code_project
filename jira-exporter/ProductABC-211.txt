@@ -1,0 +1,21 @@
+Project: ProductABC
+Title: ProductABC-211 Inconsistent Wi-Fi Security Enforcement
+
+DESCRIPTION:
+A user configured the 2.4GHz Wi-Fi SSID to use WPA3/WPA2 Mixed Mode. After switching the security setting back to WPA2-PSK (AES) only, two separate clients connected to the same SSID (one mobile, one laptop) can still ping each other and access files via an open shared folder, despite the "Client Isolation" setting being visibly enabled in the WebGUI.
+
+Step to Reproduce:
+1. In the WebGUI, set the 2.4GHz Wi-Fi security to WPA3/WPA2 Mixed Mode and save the setting.
+2. Immediately change the security setting back to WPA2-PSK (AES) only and save.
+3. Ensure Client Isolation is enabled and save if necessary.
+4. Connect Client A and Client B to the 2.4GHz SSID.
+5. From Client A, attempt to ping the IP address of Client B.
+
+Actual Results:
+Client A can successfully ping Client B. It appears that the security state (isolation) is not correctly re-applied to the bridge/AP after the security protocol (WPA) is downgraded.
+
+Expected Results:
+When Client Isolation is enabled, connected devices on the same SSID must not be able to communicate with each other. Ping requests should fail immediately.
+
+Firmware Version:
+1.01.10build01
