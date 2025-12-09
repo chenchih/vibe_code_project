@@ -63,11 +63,12 @@ To capture each field of content please click on Jiar exporter
 ![run jiarexporter](img/Jiar_download_text.PNG)
 
 ### Step3  Select your desired action to download
-    *   **Copy to Clipboard:** Best for quick AI prompting.
-    *   **Download .txt:** Best for documentation or offline notes.
-    *   **Download .csv:** Best for spreadsheet analysis.
+- **Copy to Clipboard:** Best for quick AI prompting.
+- **Download .txt:** Best for documentation or offline notes.
+- **Download .csv:** Best for spreadsheet analysis.
 
 When Click download will show downloaded and you can compare the Web and Text it the same. 
+
 ![run jiarexporter](img/Compare_Web_Text.PNG)
 
 Now after it extract content into text file, you now can copy the entire information and paste to LLM to analysis it. 
@@ -81,6 +82,20 @@ Now after it extract content into text file, you now can copy the entire informa
 
 ---
 
+## Directory Description
+
+- result: store the downloaded file like `.txt` or `csv`
+- demoJiarSample: is a demo of Jiar not the real live jiar.  
+
+
+
+## Conclusion
+
+Overall this tool is able to extract important ticket information into text file, and use copy the content to LLM to let AI help me analysis it without read the Jiar ticket. My example test case is an easy example also generate by AI. But in the real time the ticket somehow will seem complicated, so we might need AI support to help us. 
+
+If you manually copy and paste it waste alot of time, click on plugin is much productive. It also faster than write a automatic webscrap script, less than a second done. 
+
+Any question　or any recommend please reach me, but this tool is not publish on store just use for myself. If people have some feedback may I can think of publish, but for now I might not publish unless many people like it. 
 
 
 ## 📝 License
@@ -88,4 +103,3 @@ Now after it extract content into text file, you now can copy the entire informa
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-
