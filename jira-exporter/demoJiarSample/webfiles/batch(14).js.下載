@@ -1,6 +1,0 @@
-WRMCB=function(e){var c=console;if(c&&c.log&&c.error){c.log('Error running batched script.');c.error(e);}}
-;
-try {
-/* module-key = 'jira.webresources:resource-phase-checkpoint-hit', location = '/includes/jira/resource-phase-checkpoint/hitCheckpoints.js' */
-window.__resourcePhaseCheckpointResolvers.resolveDeferPhaseCheckpoint(),document.addEventListener("DOMContentLoaded",function(){"use strict";setTimeout(function(){window.__resourcePhaseCheckpointResolvers.resolveInteractionPhaseCheckpoint(),window.performance&&window.performance.mark&&(window.performance.mark("defer_scripts_clicks",{detail:{count:window.DeferScripts.totalClicks}}),window.performance.mark("defer_scripts_keydowns",{detail:{count:window.DeferScripts.totalKeydowns}}),window.DeferScripts.clickListener&&window.DeferScripts.keydownListener()&&(window.removeEventListener("click",window.DeferScripts.clickListener),window.removeEventListener("keydown",window.DeferScripts.keydownListener)))})});
-}catch(e){WRMCB(e)};
