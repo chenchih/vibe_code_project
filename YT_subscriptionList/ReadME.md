@@ -3,15 +3,14 @@
 <!-- Language Navigation / 語言導覽 -->
 <p align="center">
   <strong>
-    <a href="#-english">🇬🇧 English</a>
+    <a href="#-English">English</a>
     &nbsp;&nbsp;|&nbsp;&nbsp;
     <a href="#-繁體中文">🇹🇼 繁體中文</a>
   </strong>
 </p>
 
----
 
-## 🇬🇧 English
+## English
 
 ### Description
 A simple Google Chrome Extension that scrapes your YouTube subscriptions list and exports the data to **CSV** (for Excel) or **Text** file.
@@ -39,8 +38,8 @@ A simple Google Chrome Extension that scrapes your YouTube subscriptions list an
 5.  Click the Red Button: **"Scrape Subscriptions"**.
     *   *A spinner will appear while it processes.*
 6.  Once finished, choose your format:
-    - Download CSV:** Name & ID (Best for Excel).
-    - Download TXT:** Name, ID & Intro.
+    - Download CSV: Name & ID (Best for Excel).
+    - Download TXT: Name, ID & Intro.
 
 ### ScreenShot
 
@@ -79,8 +78,8 @@ A simple Google Chrome Extension that scrapes your YouTube subscriptions list an
 5.  點擊紅色按鈕：**「Scrape Subscriptions」**。
     *   *程式處理時會顯示轉圈圈動畫。*
 6.  掃描完成後，選擇您要下載的格式：
-    *   **Download CSV**：僅包含名稱與 ID (適合 Excel 整理)。
-    *   **Download TXT**：包含名稱、ID 與完整頻道簡介。
+    - **Download CSV**：僅包含名稱與 ID (適合 Excel 整理)。
+    - **Download TXT**：包含名稱、ID 與完整頻道簡介。
 
 ### ScreenShot
 
