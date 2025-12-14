@@ -1,0 +1,25 @@
+
+
+{
+  "manifest_version": 3,
+  "name": "YT subscription list",
+  "version": "1.0",
+  "description": "Scrape Name, Handle, and Description to CSV or TXT.",
+  "permissions": ["activeTab", "scripting"],
+  
+  "icons": {
+    "16": "img/logo.png",
+    "48": "img/logo.png",
+    "128": "img/logo.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "YT Subscription List",
+    "default_icon": {
+      "16": "img/logo.png", 
+      "48": "img/logo.png",
+      "128": "img/logo.png"
+    }
+  }
+}
