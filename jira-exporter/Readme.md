@@ -6,7 +6,9 @@ I often need to copy Jira ticket content into an LLM to help analyze the summary
 **Jira Exporter** It is a Chrome Extension designed for Developers, QA Engineers, and Product Managers that automatically removes UI clutter and formats the ticket into a clean plain text. This allow manually copying Jira tickets into AI tools (ChatGPT, Claude, etc.) to do summarize the ticket. 
 
 ---
-
+## Update
+- v1.0: inital release
+- v2.0: Jiar System Update and effected title section which not able to capture, so fixed Title section
 ## ✨ Key Features
 
 ### 🛡️ Privacy First

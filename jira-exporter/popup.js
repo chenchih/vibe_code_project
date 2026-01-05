@@ -1,36 +1,43 @@
-// --- EVENT LISTENERS ---
+// --- 1. CORE BUTTON LISTENERS ---
 document.getElementById('copyBtn').addEventListener('click', () => runAction('copy'));
 document.getElementById('downloadBtn').addEventListener('click', () => runAction('download-txt'));
 document.getElementById('csvBtn').addEventListener('click', () => runAction('download-csv'));
 
-// About Button Logic
+// --- 2. ABOUT BUTTON LOGIC (Fixed) ---
 document.getElementById('aboutBtn').addEventListener('click', () => {
   const aboutDiv = document.getElementById('about-section');
-  // Toggle display (Show/Hide)
+  
+  // Toggle Visibility
   if (aboutDiv.style.display === 'block') {
     aboutDiv.style.display = 'none';
   } else {
     aboutDiv.style.display = 'block';
-    // Auto-detect version from manifest
-    const manifest = chrome.runtime.getManifest();
-    document.getElementById('version-number').innerText = manifest.version;
+    
+    // Get version from manifest.json automatically
+    try {
+      const manifest = chrome.runtime.getManifest();
+      const versionSpan = document.getElementById('version-number');
+      if (versionSpan) {
+        versionSpan.innerText = "v" + manifest.version;
+      }
+    } catch (e) {
+      console.error("Could not read manifest version", e);
+    }
   }
 });
 
-// Feedback Button Logic
+// --- 3. FEEDBACK BUTTON LOGIC (Fixed) ---
 document.getElementById('feedbackBtn').addEventListener('click', () => {
-  // CHANGE THIS EMAIL to your actual email address
+  // IMPORTANT: Replace this with your actual email
   const email = "your-email@example.com"; 
   const subject = "Jira Exporter Feedback";
-  const body = "Hi, I have a suggestion/issue regarding the extension...";
+  const body = "Hi, I have a suggestion or found a bug...";
   
-  // Opens the user's default email client
   const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   chrome.tabs.create({ url: mailtoLink });
 });
 
-
-// --- MAIN LOGIC ---
+// --- 4. MAIN ACTION LOGIC ---
 function runAction(action) {
   const statusDiv = document.getElementById('status');
   statusDiv.innerText = "Processing...";
@@ -56,7 +63,7 @@ function runAction(action) {
 
       if (action === 'download-csv') {
         // --- CSV FORMAT ---
-        filename = `${data.id || 'ticket'}.csv`; 
+        filename = `${data.id || 'ticket'}.csv`;
         mimeType = 'text/csv;charset=utf-8;';
         
         const toCsv = (text) => {
@@ -171,17 +178,29 @@ function scrapeJiraContent() {
   }
 
   // --- EXTRACTION ---
+  
+  // 1. Project
   const projectSelectors = ['#project-name-val', '[data-testid="issue.views.issue-base.foundation.breadcrumbs.project-container"]', '.aui-nav-breadcrumbs li:first-child a', 'a[href*="/browse/"][id*="project"]'];
   const projectEl = getElement(projectSelectors);
   let projectText = projectEl ? projectEl.innerText.trim() : '';
   projectText = projectText.replace(/\[.*?\]/g, '').trim();
 
+  // 2. ID
   const keyEl = getElement(['[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue-link"]', '#key-val', '.issue-link']);
   const ticketId = keyEl ? keyEl.innerText.trim() : '';
 
-  const titleEl = getElement(['[data-testid="issue.views.issue-base.foundation.summary.heading"]', 'h1#summary-val', 'h1']);
+  // 3. Title (INCLUDES FIX FOR NEW JIRA LAYOUT)
+  const titleSelectors = [
+    '[data-testid="issue.views.issue-base.foundation.summary.heading"]', // Cloud
+    '#summary-val', // Server New (matches div or h1)
+    'h1#summary-val', // Server Old
+    'h1', // Fallback
+    'h2' // Fallback for very new layouts
+  ];
+  const titleEl = getElement(titleSelectors);
   const titleText = titleEl ? titleEl.innerText.trim() : 'Title Not Found';
 
+  // 4. Description
   const descSelectors = ['[data-testid="issue.views.issue-base.foundation.description.description-field-content"]', '#description-val', '#description-module .mod-content'];
   const descEl = getElement(descSelectors);
   let cleanDesc = "";
@@ -194,6 +213,7 @@ function scrapeJiraContent() {
     cleanDesc = formatText(clone.innerText);
   }
 
+  // 5. Custom Fields
   const stepToReproduce = getFieldByLabel("Step to Reproduce") || getFieldByLabel("Steps to Reproduce");
   const actualResults   = getFieldByLabel("Actual Results");
   const expectedResults = getFieldByLabel("Expected Results");

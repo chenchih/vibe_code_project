@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Jira to AI Exporter",
-  "version": "1.0",
-  "description": "Exports Jira ticket content to text/markdown, removing user details for privacy.",
+  "version": "2.0",
+  "description": "Update Title issue after new Jiar Update",
   "permissions": ["activeTab", "scripting"],
   
   "icons": {
