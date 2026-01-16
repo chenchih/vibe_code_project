@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Quick Note & URL Tracker",
+  "version": "2.3",
+  "description": "A professional temporary workspace to capture notes, manage to-do lists, and save URLs instantly with search, sort, and bulk export features.",
+  "permissions": ["storage", "activeTab", "tabs"],
+    "icons": {
+    "128": "NoteTake.png"
+  },
+  
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

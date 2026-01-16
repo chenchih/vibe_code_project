@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav id="main-nav">
+    <button id="nav-notes" class="active">Notes</button>
+    <button id="nav-todo">To-Do</button>
+    <button id="nav-urls">URLs</button>
+    <button id="nav-about">About</button>
+  </nav>
+
+  <!-- NOTES PAGE -->
+  <div id="note-list-view" class="page">
+    <div class="header"><button id="btn-add-new" class="primary">+ New Note</button></div>
+    <div class="search-sort-row">
+      <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="note-search" placeholder="Search notes..."></div>
+      <button id="btn-sort" class="sort-pill">SORT: <span id="sort-label">NEWEST</span></button>
+    </div>
+    <div id="bulk-toolbar" class="action-row-pills" style="display: none;">
+      <button id="btn-select-all" class="pill-btn">✓ Select All</button>
+      <button id="btn-bulk-export" class="pill-btn">↓ Export</button>
+      <div class="spacer"></div>
+      <button id="btn-bulk-delete" class="pill-btn-danger">DELETE</button>
+    </div>
+    <div id="notes-container"></div>
+  </div>
+
+  <!-- NOTE EDITOR -->
+  <div id="note-edit-view" class="page" style="display:none;">
+    <div class="toolbar-editor">
+      <button id="btn-back" class="btn-action btn-back">&larr; BACK</button>
+      <button id="btn-export-single" class="btn-action btn-export-pill">EXPORT .TXT</button>
+      <button id="btn-delete-single" class="btn-action btn-delete-pill">Delete</button>
+    </div>
+    <input type="text" id="edit-title" placeholder="Note Title...">
+    <textarea id="edit-content" class="editor-textarea" placeholder="Paste links or write notes here..."></textarea>
+    <button id="btn-save-note" class="primary">Save & Close</button>
+  </div>
+
+  <!-- TO-DO PAGE -->
+  <div id="todo-view" class="page" style="display:none;">
+    <div class="toolbar-todo">
+      <button id="clear-todo" class="btn-action-danger-small">Clear</button>
+      <span class="todo-page-label">To Do List</span>
+      <button id="export-todo" class="btn-action-primary-small">Export .md</button>
+    </div>
+    <textarea id="todo-input" class="todo-textarea" placeholder="- [ ] Task 1..."></textarea>
+    <button id="save-todo" class="primary">Save To-Do List</button>
+  </div>
+
+  <!-- URLS PAGE -->
+  <div id="url-view" class="page" style="display:none;">
+    <div class="url-action-row">
+      <button id="btn-add-current-tab" class="primary">Save Current Tab</button>
+      <button id="btn-add-url-manual" class="pill-btn-outline">+ Manual</button>
+    </div>
+    <div id="url-form" class="url-card-form" style="display:none;">
+      <div class="form-group">
+        <label>Link Title</label>
+        <input type="text" id="url-title-input" placeholder="e.g. My GitHub">
+      </div>
+      <div class="form-group">
+        <label>Website URL</label>
+        <input type="text" id="url-link-input" placeholder="https://...">
+      </div>
+      <button id="btn-save-url" class="primary">Add Link to List</button>
+      <div class="url-card-footer">
+        <button id="btn-clear-url" class="pill-btn-small">Clear Fields</button>
+        <button id="btn-cancel-url" class="pill-btn-danger-small">Cancel</button>
+      </div>
+    </div>
+    <div id="urls-container"></div>
+  </div>
+
+  <!-- ABOUT PAGE -->
+  <div id="about-view" class="page" style="display:none;">
+    <div class="about-card">
+      <div class="about-icon">📝</div>
+      <h3>Quick Note Tracker</h3>
+      <p class="version">Version <span id="ext-version">2.4</span></p>
+      <hr>
+      <p class="desc">A professional temporary workspace for links and notes.</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

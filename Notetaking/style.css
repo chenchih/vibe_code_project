@@ -1,0 +1,70 @@
+:root {
+  --primary: #007bff;
+  --primary-hover: #0056b3;
+  --danger: #dc3545;
+  --bg: #f8f9fa;
+  --border: #e8e8e8;
+  --text: #333;
+}
+
+body { width: 380px; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+
+/* Navigation */
+nav { display: flex; background: #fff; border-bottom: 1px solid var(--border); }
+nav button { flex: 1; padding: 14px 0; border: none; background: none; cursor: pointer; color: #888; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+nav button.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+
+.page { padding: 16px; }
+
+/* Global Buttons */
+button.primary { background: var(--primary); color: #fff; border: none; width: 100%; height: 44px; border-radius: 50px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+button.primary:hover { background: var(--primary-hover); }
+
+/* URL Page Styling */
+.url-action-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+.url-action-row button { height: 44px; box-sizing: border-box; }
+.url-action-row #btn-add-current-tab { flex: 2; }
+.pill-btn-outline { flex: 1; background: #fff; border: 1px solid var(--border); color: var(--text); border-radius: 50px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.pill-btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+/* URL FORM CARD */
+.url-card-form { background: #fff; padding: 16px; border-radius: 14px; border: 1px solid var(--border); margin-top: 10px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 6px; margin-left: 4px; }
+.url-card-form input { width: 100%; border: 1px solid var(--border); background: #fdfdfd; padding: 10px 12px; border-radius: 8px; box-sizing: border-box; font-size: 13px; outline: none; }
+.url-card-footer { display: flex; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f5f5f5; }
+.pill-btn-small { flex: 1; background: #f8f9fa; border: 1px solid var(--border); color: #666; border-radius: 50px; padding: 7px; font-size: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+.pill-btn-danger-small { flex: 1; background: #fff1f0; border: 1px solid #ffdce0; color: var(--danger); border-radius: 50px; padding: 7px; font-size: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+
+/* Note/Utility Styles */
+.search-sort-row { display: flex; gap: 8px; margin-top: 10px; margin-bottom: 18px; align-items: center; }
+.search-container { flex: 1; position: relative; display: flex; align-items: center; }
+.search-icon { position: absolute; left: 10px; font-size: 12px; color: #aaa; }
+#note-search { width: 100%; padding: 8px 10px 8px 30px; border-radius: 20px; background: #f1f3f5; border: 1px solid transparent; font-size: 12px; outline: none; }
+.sort-pill { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 0 12px; height: 32px; font-size: 10px; font-weight: 700; color: #666; cursor: pointer; }
+.action-row-pills { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+.pill-btn { background: #fff; border: 1px solid #e0e0e0; color: #555; border-radius: 50px; padding: 6px 14px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.pill-btn-danger { background: #fff; border: 1px solid #ffe0e0; color: var(--danger); border-radius: 50px; padding: 6px 16px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.spacer { flex-grow: 1; }
+
+.note-item { display: flex; align-items: center; padding: 12px; background: #fff; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; }
+.note-info-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 10px; }
+.note-item-title { font-weight: 600; font-size: 14px; color: #222; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.note-date { font-size: 11px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 6px; font-weight: 600; white-space: nowrap; border: 1px solid #d0e3ff; }
+
+/* Editor & Todo */
+.toolbar-editor { display: flex; gap: 8px; margin-bottom: 18px; width: 100%; }
+.btn-action { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 50px; font-size: 11px; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; }
+.btn-back { background: #f0f0f0; color: #555; }
+.btn-export-pill { background: #e7f3ff; color: var(--primary); }
+.btn-delete-pill { background: #fff1f0; color: var(--danger); }
+#edit-title { border: 1px solid var(--border); background: #fff; font-size: 16px; font-weight: 600; width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
+.editor-textarea { width: 100%; height: 250px; border: 1px solid var(--border); border-radius: 12px; padding: 15px; box-sizing: border-box; margin-bottom: 15px; line-height: 1.6; font-size: 14px; outline: none; background: #fff; resize: none; display: block; }
+.toolbar-todo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.todo-page-label { font-size: 14px; font-weight: 700; color: #444; text-align: center; flex: 1; }
+.btn-action-primary-small { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 50px; font-size: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+.btn-action-danger-small { background: #fff1f0; color: var(--danger); border: 1px solid #ffdce0; padding: 6px 12px; border-radius: 50px; font-size: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+.todo-textarea { width: 100%; height: 320px; border: 1px solid var(--border); border-radius: 12px; padding: 15px; box-sizing: border-box; margin-bottom: 20px; line-height: 1.6; font-family: 'Courier New', monospace; font-size: 13px; outline: none; background: #fff; resize: none; }
+.note-checkbox { accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer; }
+.about-card { padding: 24px; background: #fff; border-radius: 16px; border: 1px solid var(--border); text-align: center; }
+.version { font-size: 12px; color: var(--primary); font-weight: 700; }
