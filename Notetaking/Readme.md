@@ -1,84 +1,143 @@
-# Quick Note & URL Tracker(快速筆記與連結追蹤器)
+# Chrome Extension: Notes / To-Do / URLs Manager
 
-<!-- Language Navigation / 語言導覽 -->
 <p align="center">
-  <strong>
-    <a href="#-English">English</a>
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="#-繁體中文">繁體中文</a>
-  </strong>
+  <a href="#english">English</a> | 
+  <a href="#中文繁體">中文（繁體）</a>
 </p>
-## version
 
+---
 
 ## English
 
-### Description
-A lightweight, professional Chrome extension designed for students and developers to capture temporary ideas, links, and tasks without leaving the browser.
+### Overview
+A lightweight Chrome extension that helps you quickly save **Notes**, manage a **To-Do list**, and store useful **URLs** in one place.  
+All data is stored locally using Chrome storage and never uploaded to any server.
 
-### 🚀 Key Features
+### Features
 
-### 1. Notes Management
-*   **Search & Sort:** Find notes instantly using the search bar. Sort by "Newest First" or "Alphabetical (A-Z)".
-*   **Modern Editor:** Clean UI with a dedicated title field and spacious note area.
-*   **Time Tracking:** Every note automatically displays a formatted date and time badge.
-*   **Bulk Actions:** Select multiple notes to export as a single `.txt` file or delete them at once.
+- **Notes**
+  - Create and edit notes (Create Note / Edit Note)
+  - Save notes with one click (Save & Close)
+  - Clear all input fields
+  - Export notes:
+    - Export a **single note** as a **TXT** file
+    - Export **multiple notes** as **TXT** or **CSV**
 
-#### 2. Smart To-Do List
-*   **Markdown Style:** Simple text-based task tracking.
-*   **Quick Management:** Dedicated "Clear" button to wipe the list and "Export" to save your tasks as a `.md` file.
+- **To-Do**
+  - Create and manage a to-do list
+  - Export the to-do list as **Markdown (.md)**
+  - Clear the entire to-do list
 
-#### 3. URL Manager
-*   **One-Click Save:** Save your current active tab link instantly.
-*   **Manual Entry:** Add custom links with a clean, user-friendly form featuring "Clear" and "Cancel" options.
-*   **Quick Open:** Open saved links in a new tab with one click.
+- **URLs**
+  - Save the **current tab** URL
+  - Add URLs **manually**
+  - Store link title and website URL
+  - Support clear and cancel actions
+  - **Pagination support**: URLs are paginated when more than 5 items are saved
 
-#### 4. Professional UI
-*   **Pill-shaped Buttons:** Modern, discrete button design for a clean aesthetic.
-*   **Optimized Spacing:** Perfectly aligned layouts with balanced gaps for better readability.
+### How to Install (Developer Mode)
+1. Download or unzip the extension folder.
+2. Open Chrome and go to: `chrome://extensions`
+3. Enable **Developer mode** (top right).
+4. Click **Load unpacked**
+5. Select the extension folder.
+6. (Optional) Pin the extension icon to the toolbar.
 
-### 🛠 Installation
-1.  Download or clone this repository.
-2.  Open Chrome and navigate to `chrome://extensions/`.
-3.  Enable **Developer mode** (top right corner).
-4.  Click **Load unpacked** and select the extension folder.
+### How to Use
+- Click the extension icon to open the popup.
+- Use the top navigation tabs:
+  - **NOTES**: Manage notes
+  - **TO-DO**: Manage to-do list
+  - **URLS**: Save and manage URLs
+  - **ABOUT**: Extension information
 
-### ScreenShot
+### Export
+- Notes can be exported as **TXT** or **CSV**
+- The to-do list can be exported as **Markdown (.md)**
+
+### Privacy
+This extension stores all data **locally** using Chrome storage.  
+No data is uploaded to external servers.
+
+### Screenshot Output
+- Add Note 
+
+![Create Note](img/Note_output.png)
+
+- Add To Do list
+
+![Create To Do List](img/todoList_output.png)
+
+
+- Add URL
+
+![Create URL](img/URL_output.png)
 
 ---
 
-## 繁體中文
+## 中文（繁體）
 
 ### 簡介
-這是一款專為學生與開發者設計的輕量級專業 Chrome 擴充功能。讓您在瀏覽網頁時，無需離開視窗即可快速記錄臨時靈感、連結與任務。
+這是一個輕量級的 Chrome 擴充功能，協助你快速儲存 **筆記（Notes）**、管理 **待辦事項（To-Do）**，並集中保存常用 **網址（URLs）**。  
+所有資料皆儲存在本機（Chrome storage），不會上傳至任何伺服器。
 
-### 🚀 核心功能
+### 功能
 
-#### 1. 筆記管理
-*   **搜尋與排序：** 內建搜尋列可快速查找筆記。支援「最新優先」或「字母順序 (A-Z)」排序。
-*   **現代化編輯器：** 乾淨的介面，具備獨立的標題欄位與寬敞的筆記區域。
-*   **時間追蹤：** 每則筆記皆會自動顯示格式化的日期與時間標籤。
-*   **批次操作：** 支援選取多則筆記並合併匯出為單一 `.txt` 檔，或一次性刪除。
+- **筆記 Notes**
+  - 新增與編輯筆記（Create Note／Edit Note）
+  - 一鍵儲存筆記並關閉視窗（Save & Close）
+  - 清空所有輸入欄位
+  - 筆記匯出功能：
+    - **單筆筆記** 可匯出為 **TXT**
+    - **多筆筆記** 可匯出為 **TXT** 或 **CSV**
 
-#### 2. 智慧待辦清單
-*   **Markdown 樣式：** 簡潔的純文字任務追蹤方式。
-*   **快速管理：** 提供專屬「清除」按鈕一鍵清空，及「匯出」按鈕將清單儲存為 `.md` 檔。
+- **待辦事項 To-Do**
+  - 新增與管理待辦清單
+  - 匯出待辦事項為 **Markdown（.md）**
+  - 一鍵清空待辦清單
 
-#### 3. URL 連結管理
-*   **一鍵儲存：** 立即儲存目前正在瀏覽的分頁連結。
-*   **手動輸入：** 友善的表單介面，支援手動新增連結，並提供「清空內容」與「取消」按鈕。
-*   **快速開啟：** 一鍵即可在工作新分頁中開啟儲存的連結。
+- **網址 URLs**
+  - 儲存 **目前分頁** 的網址
+  - **手動新增** 網址
+  - 儲存網站標題與 URL
+  - 支援清空與取消操作
+  - **分頁功能**：當網址數量超過 5 筆時，自動顯示分頁
 
-#### 4. 專業 UI 設計
-*   **圓角膠囊按鈕：** 採用現代化的獨立按鈕設計，提升視覺美感。
-*   **優化間距：** 經過精密調整的版面配置，確保元素不擁擠，提升閱讀舒適度。
+### 安裝方式（開發者模式）
+1. 下載或解壓縮擴充功能資料夾
+2. 開啟 Chrome，前往：`chrome://extensions`
+3. 於右上角開啟 **開發人員模式（Developer mode）**
+4. 點擊 **載入未封裝項目（Load unpacked）**
+5. 選擇擴充功能資料夾
+6. （選用）將擴充功能釘選至工具列
 
-### 🛠 安裝步驟
-1.  下載或複製此專案原始碼。
-2.  開啟 Chrome 瀏覽器，進入 `chrome://extensions/`。
-3.  開啟右上角的 **「開發者模式」**。
-4.  點擊 **「載入開發中擴充功能」**，並選擇本工具的資料夾。
+### 使用方式
+- 點擊擴充功能圖示開啟彈出視窗
+- 使用上方導覽列切換功能頁面：
+  - **NOTES**：管理筆記
+  - **TO-DO**：管理待辦事項
+  - **URLS**：管理與儲存網址
+  - **ABOUT**：關於本擴充功能
 
-### ScreenShot
+### 匯出說明
+- 筆記可匯出為 **TXT** 或 **CSV**
+- 待辦事項可匯出為 **Markdown（.md）**
 
----
+### 隱私權說明
+本擴充功能僅將資料儲存在 **本機（Chrome storage）**，  
+不會上傳至任何伺服器，也不會蒐集任何個人資訊。
+
+### 截圖
+
+- 筆記 Notes
+
+![Create Note](img/Note_output.png)
+
+- 待辦事項 To-Do
+
+![Create To Do List](img/todoList_output.png)
+
+
+- 網址 URLs
+
+![Create URL](img/URL_output.png)

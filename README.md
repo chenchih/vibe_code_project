@@ -23,10 +23,9 @@ My vibe coding Project/ Code with AI:
 	- AI tool: Google AI studio
 	- Development: Html,JS
 	
-- [] YT_subscriptionList
+- [X] Notetaking
 	- Description: Tool that designed for students and developers to capture temporary ideas like save Note, Link, and To-Do List.
 	- Date: 2026-Jan
 	- Type: Chrome Extension
 	- AI tool: Google AI studio
-	- Development: Html,JS
-	- NOTE:README need to adjust, and adding some new Feature
+	- Development: Html,JS,CSS

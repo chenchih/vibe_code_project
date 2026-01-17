@@ -17,11 +17,12 @@
     <div class="header"><button id="btn-add-new" class="primary">+ New Note</button></div>
     <div class="search-sort-row">
       <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="note-search" placeholder="Search notes..."></div>
-      <button id="btn-sort" class="sort-pill">SORT: <span id="sort-label">NEWEST</span></button>
+      <button id="btn-sort" class="sort-pill-btn">SORT: <span id="sort-label">NEWEST</span></button>
     </div>
     <div id="bulk-toolbar" class="action-row-pills" style="display: none;">
-      <button id="btn-select-all" class="pill-btn">✓ Select All</button>
-      <button id="btn-bulk-export" class="pill-btn">↓ Export</button>
+      <button id="btn-select-all" class="pill-btn">✓ All</button>
+      <button id="btn-bulk-export" class="pill-btn">↓ TXT</button>
+      <button id="btn-bulk-export-csv" class="pill-btn">↓ CSV</button>
       <div class="spacer"></div>
       <button id="btn-bulk-delete" class="pill-btn-danger">DELETE</button>
     </div>
@@ -33,22 +34,29 @@
     <div class="toolbar-editor">
       <button id="btn-back" class="btn-action btn-back">&larr; BACK</button>
       <button id="btn-export-single" class="btn-action btn-export-pill">EXPORT .TXT</button>
-      <button id="btn-delete-single" class="btn-action btn-delete-pill">Delete</button>
+      <button id="btn-delete-single" class="btn-action btn-delete-pill">DELETE</button>
     </div>
-    <input type="text" id="edit-title" placeholder="Note Title...">
+    <input type="text" id="edit-title" class="editor-input" placeholder="Note Title...">
     <textarea id="edit-content" class="editor-textarea" placeholder="Paste links or write notes here..."></textarea>
-    <button id="btn-save-note" class="primary">Save & Close</button>
+    <div class="footer-dual-row">
+        <button id="btn-clear-note" class="pill-btn-neutral">Clear Fields</button>
+        <button id="btn-cancel-note" class="pill-btn-danger-light">Cancel</button>
+    </div>
+    <button id="btn-save-note" class="primary save-btn-final">Save & Close</button>
   </div>
 
   <!-- TO-DO PAGE -->
   <div id="todo-view" class="page" style="display:none;">
     <div class="toolbar-todo">
-      <button id="clear-todo" class="btn-action-danger-small">Clear</button>
-      <span class="todo-page-label">To Do List</span>
-      <button id="export-todo" class="btn-action-primary-small">Export .md</button>
+      <div class="toolbar-side"><button id="clear-todo" class="pill-btn-danger-light" style="height: 32px;">CLEAR</button></div>
+      <div class="todo-page-label">To Do List</div>
+      <div class="toolbar-side" style="text-align: right;"><button id="export-todo" class="btn-action-primary-small">Export .md</button></div>
     </div>
     <textarea id="todo-input" class="todo-textarea" placeholder="- [ ] Task 1..."></textarea>
-    <button id="save-todo" class="primary">Save To-Do List</button>
+    <div class="footer-dual-row">
+        <button id="btn-cancel-todo" class="pill-btn-outline footer-btn-height">Cancel Changes</button>
+        <button id="save-todo" class="primary footer-btn-height">Save To-Do List</button>
+    </div>
   </div>
 
   <!-- URLS PAGE -->
@@ -57,33 +65,39 @@
       <button id="btn-add-current-tab" class="primary">Save Current Tab</button>
       <button id="btn-add-url-manual" class="pill-btn-outline">+ Manual</button>
     </div>
+    
+    <div id="bulk-toolbar-urls" class="action-row-pills" style="display: none;">
+      <button id="btn-select-all-urls" class="pill-btn">✓ All</button>
+      <button id="btn-bulk-export-urls" class="pill-btn">↓ TXT</button>
+      <button id="btn-bulk-export-urls-csv" class="pill-btn">↓ CSV</button>
+      <div class="spacer"></div>
+      <button id="btn-bulk-delete-urls" class="pill-btn-danger">DELETE</button>
+    </div>
+
+    <!-- URL FORM CARD -->
     <div id="url-form" class="url-card-form" style="display:none;">
       <div class="form-group">
         <label>Link Title</label>
-        <input type="text" id="url-title-input" placeholder="e.g. My GitHub">
+        <input type="text" id="url-title-input" placeholder="Title...">
       </div>
       <div class="form-group">
         <label>Website URL</label>
         <input type="text" id="url-link-input" placeholder="https://...">
       </div>
       <button id="btn-save-url" class="primary">Add Link to List</button>
-      <div class="url-card-footer">
-        <button id="btn-clear-url" class="pill-btn-small">Clear Fields</button>
-        <button id="btn-cancel-url" class="pill-btn-danger-small">Cancel</button>
+      <div class="footer-dual-row" style="margin-top: 15px;">
+        <button id="btn-clear-url" class="pill-btn-neutral" style="height: 38px;">Clear</button>
+        <button id="btn-cancel-url" class="pill-btn-danger-light" style="height: 38px;">Cancel</button>
       </div>
     </div>
+
     <div id="urls-container"></div>
+    <div id="url-pagination" class="pagination-row"></div>
   </div>
 
   <!-- ABOUT PAGE -->
   <div id="about-view" class="page" style="display:none;">
-    <div class="about-card">
-      <div class="about-icon">📝</div>
-      <h3>Quick Note Tracker</h3>
-      <p class="version">Version <span id="ext-version">2.4</span></p>
-      <hr>
-      <p class="desc">A professional temporary workspace for links and notes.</p>
-    </div>
+    <div class="about-card"><div class="about-icon">📝</div><h3>Quick Note Tracker</h3><p class="version">Version <span id="ext-version">2.0</span></p><hr><p class="desc">A professional temporary workspace.</p><p class="desc"><font color="Blue"> <h4> Author:</font> CC with AI</p></h4></div>
   </div>
 
   <script src="popup.js"></script>
