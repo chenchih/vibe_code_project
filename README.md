@@ -26,6 +26,7 @@ My vibe coding Project/ Code with AI:
 - [X] Notetaking
 	- Description: Tool that designed for students and developers to capture temporary ideas like save Note, Link, and To-Do List.
 	- Date: 2026-Jan
+ 		- To-Do: Adding sync feature, allow all note is be sync 
 	- Type: Chrome Extension
 	- AI tool: Google AI studio
 	- Development: Html,JS,CSS
